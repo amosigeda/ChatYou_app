@@ -1,0 +1,28 @@
+#mysql
+jdbc.driverClassName=com.mysql.jdbc.Driver
+#\u6B63\u5F0F\u73AF\u5883\u7AEF\u53E3\u53F7\u4E3A-->2048
+#jdbc.url=jdbc:mysql://172.21.0.8:2048/chat?characterEncoding=utf-8
+#jdbc.url=jdbc:mysql://bj-cdb-1xqhfy4i.sql.tencentcdb.com:63212/chat?characterEncoding=utf-8
+jdbc.url=jdbc\:mysql\://localhost\:3306/chat?characterEncoding\=utf-8
+#jdbc.url=jdbc\:mysql\://118.25.231.110\:3306/zb?characterEncoding\=utf-8
+jdbc.username=root
+#password ->yiliaokeji2018
+#alipay pwd -> Root@yiliaokeji!@#2018
+jdbc.password=root
+
+hibernate.dialect=org.hibernate.dialect.MySQLInnoDBDialect
+
+#sqlserver
+#hibernate.dialect=org.hibernate.dialect.SQLServerDialect
+
+
+hibernate.hbm2ddl.auto=none
+hibernate.show_sql=true 
+hibernate.format_sql=false
+hibernate.current_session_context_class=org.springframework.orm.hibernate4.SpringSessionContext
+hibernate.cache.use_query_cache=false
+hibernate.cache.provider_class=org.hibernate.cache.EhCacheProvider
+hibernate.ehcache_config_file=/config/ehcache.xml
+javax.persistence.validation.mode=none
+hibernate.connection.release_mode=after_transaction
+

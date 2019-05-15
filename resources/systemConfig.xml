@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<!-- 支付宝相关 -->
+<properties>
+    <!-- 推流地址 -->
+    <entry key="play_addr">rtmp://yiliao26.pullyl.3ttech.cn/yiliao26/</entry>
+    <!-- 项目名称 -->
+    <entry key="projectName">巧遇</entry>
+    <!-- 支付宝回调地址 -->
+    <entry key="alipayNotifyUrl">http://chatyou.1-liao.cn:8088/pay/alipay_callback.html</entry>
+    <!-- 微信支付回调地址 -->
+    <entry key="weixinNotifyUrl">http://chatyou.1-liao.cn:8088/pay/wxPayCallBack.html</entry>
+    <!-- 微信支付发起订单的IP地址 -->
+    <entry key="spbill_create_ip"></entry>
+    <!-- 推送相关 -->
+    <entry key="app_key">b68c1fb164619c2ea2d4ad4c</entry>
+    
+    <entry key="master_secret">6caeb4db0ec629e47fb8696a</entry>
+     <!-- 渠道推广背景图片存储路径   windows -->
+	<entry key="windows_speed_fileUrl">D:/speed/img/</entry>
+	<!-- 渠道推广背景图片存储路径   centos -->
+	<entry key="centos_speed_fileUrl">/speed/img/</entry>
+	<!-- 配置图片房间地址 -->
+	<entry key="spreed_img_url">http://chatyouadmin.1-liao.cn:8088/upload/</entry>
+	<!-- 分享链接 -->
+	<entry key="share_url">http://chatyou.1-liao.cn:8088/share/jumpShare.html?userId=</entry>
+	<!--加密 公钥 -->
+	<entry key="encrypt_public">MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC4HCMBm0zYGlnGuPstcYfmmgHpRBRRc5DtBTJzPQee7G8B2Bo5Nb86ds72swPgiy+yD2ibeFIqUABqFk1prqWvv9zcxfuRRIyu4X0DfVLuSYks/qkK7JMyhhSxzvgOFuvaS8cMsxZFxgOfKuIEEPXEf41ue1Hp128twWPNT5eJ2wIDAQAB</entry>
+	<!--解密 私钥 -->
+	<entry key="encrypt_private">MIICdQIBADANBgkqhkiG9w0BAQEFAASCAl8wggJbAgEAAoGBALgcIwGbTNgaWca4+y1xh+aaAelEFFFzkO0FMnM9B57sbwHYGjk1vzp2zvazA+CLL7IPaJt4UipQAGoWTWmupa+/3NzF+5FEjK7hfQN9Uu5JiSz+qQrskzKGFLHO+A4W69pLxwyzFkXGA58q4gQQ9cR/jW57UenXby3BY81Pl4nbAgMBAAECgYBf6dia16sa0e9/RZMlQ4YHLqhcO6lSHaCcuh5kRqEXvBjAnzJaJ5PuA0Mi5nPYoOpCGyDmDbLQdEki+2ds7R1HJN7fpTNXlID6OOIteQWveDJLOUYk/koiFN8aaNtG0TUY6IFF9OoB5WABSQhStuevtGaqOJQVgS71eJPA1N4UEQJBAOzhgaHSE/cQo0ojkeJ58Qn7WV97X1MXvOsUocdPa9NMv4MsB5eDPQl20hP7STAw8LD2WUUZEpA0HSfueXvKr4UCQQDG+ENPzv8gOMwCJjbPkMdl10/1XcLXI151dLVZJn/USlhkFa9ys9b4Arnqoq3d+f/R9idwFw3LfmC6QsPE7qHfAkAK4hV1nNRD/qSx7E5wjE+xuLWTeHSZubZ5SnpgUNrQW29VFHnI0UPFoormVh43s5frWXYigZNjwrEwO3mjYV2NAkBkV7HCnvbFLj+cWd9MgIw+zP4zFOz9CIZLn+cRJbxTuIapOtJ3e0DPZLiUHySmDL06CvTKr6WyWXK4nJEUUPBrAkBZCyVyDhgQhpqgJMJvu79cHK7WCvoXYuuDUvKJNxrXPPBb05wSmWpQqxireEj1WxWn4vRbC9r+90pXqk8xG+pa</entry>
+
+    <!-- google key -->
+    <entry key="google_key">/google/chatyou-236007-2a9b3ac94a64.p12</entry>    
+
+</properties>
+
+
