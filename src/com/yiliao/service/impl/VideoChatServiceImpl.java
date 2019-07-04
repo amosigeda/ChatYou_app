@@ -333,7 +333,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 				if(map.get("roomId") == roomId && map.get("anthorId") == anthorId) {
 					return new MessageUtil(-6, "当前用户正在计时中.");
 				}else { //否则 调用挂断链接 程序继续执行
-					this.breakLink(map.get("roomId"), 6);
+					this.breakLink(userId,map.get("roomId"), 6);
 				}
 			}
 			
@@ -478,7 +478,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	 * @see com.yiliao.service.VideoChatService#breakLink(int, int)
 	 */
 	@Override
-	public MessageUtil breakLink(int roomId, int type) {
+	public MessageUtil breakLink(int userIdd,int roomId, int type) {
 		try {
 			
 			logger.info("roomId ->{},开始结算.,挂断类型->{},1.用户主动挂断链接,"
@@ -530,6 +530,19 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					if(gold > map.get("gold")) {
 						gold = (map.get("timing")/60) * map.get("deplete");
 					}
+					
+					//先查询是不是VIP  weitechao
+					String sql = "SELECT t_is_vip FROM t_user WHERE t_id = ? ";
+					Map<String, Object> mapIsVip = this.getMap(sql, userIdd);
+					
+					int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());//0是 1不是
+					//是VIP九进行优惠处理
+					if(isVip ==0 ){
+						Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou FROM t_system_setup limit 1 ");
+						int zhekou = Integer.parseInt(mapZhekou.get("t_zhekou").toString());
+						gold = gold*zhekou/100;
+					}
+					
 					
 					//保存消费记录
 					int orderId = this.saveOrder(room.getLaunchUserId(), room.getCoverLinkUserId(), 0, WalletDetail.CHANGE_CATEGORY_VIDEO, new BigDecimal(gold),roomId,time);
@@ -628,6 +641,19 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 							gold = totalGold;
 						}
 					}
+					
+					
+					//先查询是不是VIP  weitechao
+					String sqlVip = "SELECT t_is_vip FROM t_user WHERE t_id = ? ";
+					Map<String, Object> mapIsVip = this.getMap(sqlVip, userIdd);
+					
+					int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());//0是 1不是
+					//是VIP九进行优惠处理
+					if(isVip ==0 ){
+						Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou FROM t_system_setup limit 1 ");
+						gold =  gold.multiply(new BigDecimal(mapZhekou.get("t_zhekou").toString()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN)).setScale(2, BigDecimal.ROUND_DOWN);
+					}
+					
 					
 					// 保存消费记录
 					int orderId = this.saveOrder(userId, anchorId, 0,WalletDetail.CHANGE_CATEGORY_VIDEO, gold, roomId, time);
@@ -765,7 +791,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			
 			if(!rooms.isEmpty()) {
 				rooms.forEach(s ->{
-					mu = this.breakLink(s,2);
+					mu = this.breakLink(userId,s,2);
 				});
 			}
  
@@ -773,7 +799,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			if (!rooms.isEmpty()) {
 				rooms.forEach(s -> {
 					// 挂断链接
-					mu = this.breakLink(s, 2);
+					mu = this.breakLink(userId,s, 2);
 				});
 			}
 			

@@ -84,24 +84,24 @@ public class AlbumServiceImpl extends ICommServiceImpl implements AlbumService {
 
 			// 上传图片
 			if (type == 0) {
-				String[] str = { url };
+//				String[] str = { url };
 
-				// 调用鉴黄系统 鉴定封面是否违规
-				Map<String, Object> imagePorn = CheckImgUtil.imagePorn(str, querySqlList.get("t_app_id").toString(),
-						querySqlList.get("t_secret_id").toString(), querySqlList.get("t_secret_key").toString(),
-						querySqlList.get("t_bucket").toString());
-
-				List<String> pornUrl = (List<String>) imagePorn.get("pornUrl");
+//				// 调用鉴黄系统 鉴定封面是否违规
+//				Map<String, Object> imagePorn = CheckImgUtil.imagePorn(str, querySqlList.get("t_app_id").toString(),
+//						querySqlList.get("t_secret_id").toString(), querySqlList.get("t_secret_key").toString(),
+//						querySqlList.get("t_bucket").toString());
+//
+//				List<String> pornUrl = (List<String>) imagePorn.get("pornUrl");
 				// 如果存在疑是违禁图片 存储到模糊图片表中 后期人工审核
-				if (null != pornUrl && !pornUrl.isEmpty()) {
-					String inseSql = "INSERT INTO t_vague_check (t_img_url, t_data_type, t_user_id,t_gold, t_create_time) VALUES (?, ?, ?, ?,?)";
-					this.executeSQL(inseSql, pornUrl.get(1), 2, userId, gold,
-							DateUtils.format(new Date(), DateUtils.FullDatePattern));
-					// 异步通知
-					this.applicationContext.publishEvent(
-							new PushMesgEvnet(new MessageEntity(userId, "您上传的图片存在异常,已进行删除处理.", 0, new Date())));
-					return new MessageUtil(0, "您上传的图片存在异常,已进行删除处理.");
-				}
+//				if (null != pornUrl && !pornUrl.isEmpty()) {
+//					String inseSql = "INSERT INTO t_vague_check (t_img_url, t_data_type, t_user_id,t_gold, t_create_time) VALUES (?, ?, ?, ?,?)";
+//					this.executeSQL(inseSql, pornUrl.get(1), 2, userId, gold,
+//							DateUtils.format(new Date(), DateUtils.FullDatePattern));
+//					// 异步通知
+//					this.applicationContext.publishEvent(
+//							new PushMesgEvnet(new MessageEntity(userId, "您上传的图片存在异常,已进行删除处理.", 0, new Date())));
+//					return new MessageUtil(0, "您上传的图片存在异常,已进行删除处理.");
+//				}
 
 				String inseSql = "INSERT INTO t_album (t_user_id, t_title, t_addres_url, t_file_type, t_is_private,  t_money, t_is_del,t_auditing_type,t_create_time) VALUES (? ,?, ?, ?, ?, ?, ?,?,?);";
 

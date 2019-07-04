@@ -226,6 +226,8 @@ public class LoginServiceImpl extends ICommServiceImpl implements LoginService {
 				upateLoginState(user_id);
                 //设置用户余额
 				user_data.put("gold", new BigDecimal(null == user_data.get("amount")?"0": user_data.get("amount").toString()));
+				//增加摄像头开关
+				//user_data.put("t_camera_switch", null == user_data.get("t_camera_switch")?"0": user_data.get("t_camera_switch").toString());
 			 
 				if("iPhone".equals(t_phone_type)) {
 					  this.executeSQL("UPDATE t_user SET t_online_setup = 1,t_onLine = 0 WHERE t_id = ? ", user_id);
@@ -728,7 +730,8 @@ public class LoginServiceImpl extends ICommServiceImpl implements LoginService {
 				upateLoginState(user_id);
                 //设置用户余额
 				user_data.put("gold", new BigDecimal(null == user_data.get("amount")?"0": user_data.get("amount").toString()));
-			 
+				//user_data.put("t_camera_switch", null == user_data.get("t_camera_switch")?"0": user_data.get("t_camera_switch").toString());
+				 
 				if("iPhone".equals(t_phone_type)) {
 					  this.executeSQL("UPDATE t_user SET t_online_setup = 1,t_onLine = 0 WHERE t_id = ? ", user_id);
 					  this.executeSQL("UPDATE t_anchor SET t_state = 0 WHERE t_user_id = ?  ", user_id);
@@ -846,7 +849,7 @@ public class LoginServiceImpl extends ICommServiceImpl implements LoginService {
 	@Override
 	public MessageUtil userLogin(String phone, String password) {
 		try {
-			String sql = "SELECT t_id,t_is_vip,t_role,t_sex,t_disable FROM t_user u WHERE u.t_phone = ? AND u.t_pass_wrod = ? ";
+			String sql = "SELECT t_id,t_is_vip,t_role,t_sex,t_disable,t_camera_switch FROM t_user u WHERE u.t_phone = ? AND u.t_pass_wrod = ? ";
 			List<Map<String, Object>> user = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(sql, phone,
 					Md5Util.encodeByMD5(password));
 
@@ -997,7 +1000,7 @@ public class LoginServiceImpl extends ICommServiceImpl implements LoginService {
 		// 清理缓存
 
 		RoomTimer.getUserIdReturnRoomId(userId).forEach(s -> {
-			this.videoChatService.breakLink(s, 4);
+			this.videoChatService.breakLink(userId,s, 4);
 		});
 	}
 
@@ -1290,7 +1293,7 @@ public class LoginServiceImpl extends ICommServiceImpl implements LoginService {
 		logger.info("phone->{},qq->{},wx->{}");
 		
 		StringBuffer sql = new StringBuffer();
-		sql.append(" SELECT u.t_id,u.t_is_vip,u.t_role,u.t_sex,u.t_disable,SUM(b.t_profit_money+b.t_recharge_money+b.t_share_money) AS amount ");
+		sql.append(" SELECT u.t_id,u.t_camera_switch,u.t_is_vip,u.t_role,u.t_sex,u.t_disable,SUM(b.t_profit_money+b.t_recharge_money+b.t_share_money) AS amount ");
 		sql.append(" FROM t_user u LEFT JOIN t_balance  b ON b.t_user_id = u.t_id  ");
 		//判断
 		if(StringUtils.isNotBlank(phone)) {

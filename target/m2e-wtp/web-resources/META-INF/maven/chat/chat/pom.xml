@@ -325,9 +325,7 @@
 			<artifactId>google-api-services-androidpublisher</artifactId>
 			<version>v2-rev19-1.20.0</version>
 		</dependency>
-	
 	</dependencies>
-	<!--  -->
 	<build>
 		<sourceDirectory>${basedir}/src</sourceDirectory>
 		<outputDirectory>${basedir}/WebRoot/WEB-INF/classes</outputDirectory>
@@ -346,20 +344,14 @@
 					<webappDirectory>${basedir}/WebRoot</webappDirectory>
 					<warSourceDirectory>${basedir}/WebRoot</warSourceDirectory>
 				</configuration>
-				<version>2.3</version>
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>1.6</source>
+					<target>1.6</target>
 				</configuration>
 			</plugin>
 		</plugins>
-		  
 	</build>
-	
-	 
-	
 </project>

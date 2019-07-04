@@ -700,7 +700,7 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 	public MessageUtil getPersonalData(int userId) {
 		try {
 			// 查询个人信息
-			String sql = "SELECT u.t_nickName,u.t_age,u.t_handImg,u.t_weixin,u.t_phone,u.t_height,u.t_weight,u.t_constellation,u.t_city,u.t_synopsis,u.t_autograph,u.t_vocation FROM t_user u WHERE u.t_id = ?";
+			String sql = "SELECT u.t_nickName,u.t_age,u.t_handImg,u.t_weixin,u.t_phone,u.t_height,u.t_weight,u.t_constellation,u.t_city,u.t_synopsis,u.t_autograph,u.t_vocation,u.t_camera_switch FROM t_user u WHERE u.t_id = ?";
 
 			Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sql,
 					userId);
@@ -783,7 +783,7 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 	@Override
 	public MessageUtil updatePersonalData(int userId, String t_nickName, String t_phone, Integer t_height,
 			Double t_weight, String t_constellation, String t_city, String t_synopsis, String t_autograph,
-			String t_vocation, String t_weixin, Integer t_age, String t_handImg) {
+			String t_vocation, String t_weixin, Integer t_age, String t_handImg,int t_camera_switch) {
 		try {
 
 			String sql = "update t_user u set ";
@@ -804,27 +804,27 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 
 			if (null != t_handImg && !"".equals(t_handImg.trim())) {
 
-				String[] str = { t_handImg };
-
-				// 获取秘钥信息
-				String qSql = " SELECT t_app_id,t_secret_id,t_secret_key,t_bucket FROM t_object_storage ";
-
-				Map<String, Object> querySqlList = this.getMap(qSql);
-
-				// 调用鉴黄系统 鉴定封面是否违规
-				Map<String, Object> imagePorn = CheckImgUtil.imagePorn(str, querySqlList.get("t_app_id").toString(),
-						querySqlList.get("t_secret_id").toString(), querySqlList.get("t_secret_key").toString(),
-						querySqlList.get("t_bucket").toString());
-
-				List<String> pornUrl = (List<String>) imagePorn.get("pornUrl");
-				// 如果存在疑是违禁图片 存储到模糊图片表中 后期人工审核
-				if (null != pornUrl && !pornUrl.isEmpty()) {
-					String inseSql = "INSERT INTO t_vague_check (t_img_url, t_data_type, t_user_id, t_create_time) VALUES (?, ?, ?, ?)";
-					this.getFinalDao().getIEntitySQLDAO().executeSQL(inseSql, pornUrl.get(1), 0, userId,
-							DateUtils.format(new Date(), DateUtils.FullDatePattern));
-				} else {
+//				String[] str = { t_handImg };
+//
+//				// 获取秘钥信息
+//				String qSql = " SELECT t_app_id,t_secret_id,t_secret_key,t_bucket FROM t_object_storage ";
+//
+//				Map<String, Object> querySqlList = this.getMap(qSql);
+//
+//				// 调用鉴黄系统 鉴定封面是否违规
+//				Map<String, Object> imagePorn = CheckImgUtil.imagePorn(str, querySqlList.get("t_app_id").toString(),
+//						querySqlList.get("t_secret_id").toString(), querySqlList.get("t_secret_key").toString(),
+//						querySqlList.get("t_bucket").toString());
+//
+//				List<String> pornUrl = (List<String>) imagePorn.get("pornUrl");
+//				// 如果存在疑是违禁图片 存储到模糊图片表中 后期人工审核
+//				if (null != pornUrl && !pornUrl.isEmpty()) {
+//					String inseSql = "INSERT INTO t_vague_check (t_img_url, t_data_type, t_user_id, t_create_time) VALUES (?, ?, ?, ?)";
+//					this.getFinalDao().getIEntitySQLDAO().executeSQL(inseSql, pornUrl.get(1), 0, userId,
+//							DateUtils.format(new Date(), DateUtils.FullDatePattern));
+//				} else {
 					sql = sql + " u.t_handImg = '" + t_handImg + "',";
-				}
+//				}
 			}
 
 			// 获取当前手机号是否已经存在了
@@ -867,6 +867,8 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 				sql = sql + " u.t_weixin = '" + t_weixin + "',";
 			}
 
+			sql = sql + " u.t_camera_switch = '" + t_camera_switch + "',";
+			
 			if (sql.indexOf(",") > 0) {
 
 				sql = sql.substring(0, sql.lastIndexOf(","));
@@ -1366,16 +1368,16 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 			String[] str = coverImg.split(",");
 
 			// 获取秘钥信息
-			String qSql = " SELECT t_app_id,t_secret_id,t_secret_key,t_bucket FROM t_object_storage ";
-
-			Map<String, Object> querySqlList = this.getMap(qSql);
+//			String qSql = " SELECT t_app_id,t_secret_id,t_secret_key,t_bucket FROM t_object_storage ";
+//
+//			Map<String, Object> querySqlList = this.getMap(qSql);
 
 			// 调用鉴黄系统 鉴定封面是否违规
-			Map<String, Object> imagePorn = CheckImgUtil.imagePorn(str, querySqlList.get("t_app_id").toString(),
-					querySqlList.get("t_secret_id").toString(), querySqlList.get("t_secret_key").toString(),
-					querySqlList.get("t_bucket").toString());
+//			Map<String, Object> imagePorn = CheckImgUtil.imagePorn(str, querySqlList.get("t_app_id").toString(),
+//					querySqlList.get("t_secret_id").toString(), querySqlList.get("t_secret_key").toString(),
+//					querySqlList.get("t_bucket").toString());
 			// 得到正常图片的数量
-			List<String> imgUrl = (List<String>) imagePorn.get("imgUrl");
+//			List<String> imgUrl = (List<String>) imagePorn.get("imgUrl");
 			// 得到疑是涉黄违禁图片
 			// List<String> pornUrl = (List<String>) imagePorn.get("pornUrl");
 			// 删除数据
@@ -1384,7 +1386,7 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 
 			String sql = "INSERT INTO t_cover_examine (t_img_url, t_user_id, t_first,t_is_examine,t_create_time) VALUES (?,?,?,?,?);";
 
-			for (String url : imgUrl) {
+			for (String url : str) {
 				this.getFinalDao().getIEntitySQLDAO().executeSQL(sql, url, userId, t_first.equals(url) ? 0 : 1, 0,
 						DateUtils.format(new Date(), DateUtils.FullDatePattern));
 
@@ -1630,11 +1632,17 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 				payMoney = new BigDecimal(map.get("t_money").toString());
 			}
 
-			String inseSql = "INSERT INTO t_recharge (t_user_id, t_recharge_money, t_order_no, t_recharge_type, t_payment_type, t_setmeal_id, t_order_state, t_create_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+			int goldType = 1;
+			if(t_payment_type == 2 || t_payment_type == 3){
+				goldType = 2;//1人民币 2新台币
+			}
+			
+			
+			String inseSql = "INSERT INTO t_recharge (t_user_id, t_recharge_money, t_order_no, t_recharge_type, t_payment_type, t_setmeal_id, t_order_state, t_create_time,t_gold_type) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
 			// 生产订单记录
 			this.getFinalDao().getIEntitySQLDAO().executeSQL(inseSql, userId, payMoney,
 					"no_" + userId + "_" + System.currentTimeMillis(), t_recharge_type, t_payment_type, t_setmeal_id, 0,
-					DateUtils.format(new Date(), DateUtils.FullDatePattern));
+					DateUtils.format(new Date(), DateUtils.FullDatePattern),goldType);
 
 			// 创建第三方订单
 

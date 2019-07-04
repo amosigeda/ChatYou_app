@@ -68,7 +68,6 @@
 		</property>
 		<property name="configurationClass"
 			value="org.hibernate.cfg.AnnotationConfiguration" />
-			
 		<property name="hibernateProperties">
 			<props>
 				<prop key="hibernate.dialect">${hibernate.dialect}</prop>

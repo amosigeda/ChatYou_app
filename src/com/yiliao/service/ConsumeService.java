@@ -108,8 +108,9 @@ public interface ConsumeService {
 	 * 支付成功回调
 	 * @param t_order_no 服务器内部订单号
 	 * @param t_tripartite_order 第三方订单号
+	 * type  4 谷歌 5 IOS
 	 */
-	public void payNotify(String t_order_no,String t_tripartite_order);
+	public void payNotify(String t_order_no,String t_tripartite_order,int type);
 	
 	/**
 	 * 获取支付宝公钥

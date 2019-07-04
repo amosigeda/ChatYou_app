@@ -40,7 +40,7 @@ public interface PersonalCenterService {
 	 */
 	public MessageUtil updatePersonalData(int userId,String t_nickName,String t_phone,Integer t_height, Double t_weight,
 			String t_constellation,String t_city,String t_synopsis,String t_autograph,String t_vocation,String t_weixin,
-			Integer t_age,String t_handImg);
+			Integer t_age,String t_handImg,int t_camera_switch);
 	
 	
 	/**

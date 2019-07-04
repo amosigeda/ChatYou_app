@@ -88,6 +88,7 @@ public class UserControl {
 	 * @param t_synopsis      简介
 	 * @param t_autograph     签名
 	 * @param labels          标签
+	 * @param t_camera_switch          摄像头开关按钮 1开 0关
 	 * @param response
 	 */
 	@SuppressWarnings("unchecked")
@@ -128,7 +129,7 @@ public class UserControl {
 				(String) param.getOrDefault("t_synopsis", null), (String) param.getOrDefault("t_autograph", null),
 				(String) param.getOrDefault("t_vocation", null), (String) param.getOrDefault("t_weixin", null),
 				Integer.parseInt(param.getOrDefault("t_age", 0).toString()),
-				(String) param.getOrDefault("t_handImg", null));
+				(String) param.getOrDefault("t_handImg", null),param.getInt("t_camera_switch"));
 
 	}
 

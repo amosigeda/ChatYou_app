@@ -177,7 +177,7 @@ public class VideoChatControl {
 			// 返回数据
 			return new MessageUtil(-500, "服务器拒绝执行请求!");
 		}
-		return this.videoChatService.breakLink(param.getInt("roomId"), 1);
+		return this.videoChatService.breakLink(param.getInt("userId"), param.getInt("roomId"), 1);
 
 	}
 

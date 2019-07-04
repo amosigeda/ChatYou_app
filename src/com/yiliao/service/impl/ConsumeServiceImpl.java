@@ -677,9 +677,11 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 	 * 充值VIP(non-Javadoc)
 	 * 
 	 * @see com.yiliao.service.ConsumeService#vipStoreValue(int, int)
+	 * //0.支付宝 1.微信 2.pepay 3.Google pay  4. iPhone 内购
 	 */
 	@Override
 	public MessageUtil vipStoreValue(int userId, int setMealId, int payType) {
+		
 		try {
 			// 根据套餐编号得到用户需要支付的金额
 
@@ -758,15 +760,21 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 				res_map = new HashMap<>(); 
 				res_map.put("goodsName", setMealMap.get("t_set_meal_name"));
 				res_map.put("serviceOrderId", orderNo);
+			}else  if(payType == 4) { //苹果支付预留
+				// 生成苹果支付相关构建代码和回传给app的数据信息
 			}
 
-			if (StringUtils.isNotBlank(aliPay) || (null != map && !map.isEmpty()) || !res_map.isEmpty()) {
-
+			if (StringUtils.isNotBlank(aliPay) || (null != map && !map.isEmpty()) || (null !=res_map && !res_map.isEmpty())) {
+//0 1 4人民币 2 3新台币
+				int goldType = 1;
+				if(payType == 2 || payType == 3){
+					goldType = 2;//1人民币 2新台币
+				}
 				// 生产订单记录
-				String orderSql = "INSERT INTO t_recharge ( t_user_id, t_recharge_money, t_order_no, t_recharge_type, t_payment_type, t_setmeal_id, t_order_state, t_create_time) VALUES (?,?,?,?,?,?,?,?);";
+				String orderSql = "INSERT INTO t_recharge ( t_user_id, t_recharge_money, t_order_no, t_recharge_type, t_payment_type, t_setmeal_id, t_order_state, t_create_time, t_gold_type) VALUES (?,?,?,?,?,?,?,?,?);";
 
 				this.executeSQL(orderSql, userId, setMealMap.get("t_money").toString(), orderNo, 0, payType, setMealId,
-						0, DateUtils.format(new Date(), DateUtils.FullDatePattern));
+						0, DateUtils.format(new Date(), DateUtils.FullDatePattern),goldType);
 
 				mu = new MessageUtil(1, "订单创建成功!");
 
@@ -782,6 +790,9 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 					break;
 				case 3: //google
 					mu.setM_object(res_map);
+					break;
+				case 4: //Apple pay
+					
 					break;
 				}
 			} else {
@@ -881,14 +892,22 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 				resMap = new HashMap<>();
 				resMap.put("goodsName", smlMap.get("t_set_meal_name"));
 				resMap.put("serviceOrderId", orderNo);
+			}else if(payType == 4) { //苹果支付
+				// 生成苹果支付相关构建代码和回传给app的数据信息
 			}
 
 			if (StringUtils.isNotBlank(alipay) || (null != map && !map.isEmpty()) || (null != resMap && !resMap.isEmpty())) {	
+				
 				// 生产订单记录
-				String orderSql = "INSERT INTO t_recharge ( t_user_id, t_recharge_money, t_order_no, t_recharge_type, t_payment_type, t_setmeal_id, t_order_state, t_create_time) VALUES (?,?,?,?,?,?,?,?);";
+				int goldType = 1;
+				if(payType == 2 || payType == 3){
+					goldType = 2;//1人民币 2新台币
+				}
+				
+				String orderSql = "INSERT INTO t_recharge ( t_user_id, t_recharge_money, t_order_no, t_recharge_type, t_payment_type, t_setmeal_id, t_order_state, t_create_time,t_gold_type) VALUES (?,?,?,?,?,?,?,?,?);";
 
 				this.executeSQL(orderSql, userId, smlMap.get("t_money").toString(), orderNo, 1, payType, setMealId, 0,
-						DateUtils.format(new Date(), DateUtils.FullDatePattern));
+						DateUtils.format(new Date(), DateUtils.FullDatePattern),goldType);
 
 				mu = new MessageUtil(1, "订单创建成功!");
 
@@ -904,6 +923,9 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 					break;
 				case 3: //google pay
 					mu.setM_object(resMap);
+					break;
+				case 4 : //Apple pay
+					
 					break;
 				}
 			} else {
@@ -925,7 +947,7 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 	 * java.lang.String)
 	 */
 	@Override
-	public synchronized void payNotify(String t_order_no, String t_tripartite_order) {
+	public synchronized void payNotify(String t_order_no, String t_tripartite_order,int type) {
 
 		try {
 			logger.info("--进入了支付回调--");
@@ -976,10 +998,15 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 			if (!cpsList.isEmpty()) {
 				// 计算本次应该给CPS联盟主分配多少提成
 				BigDecimal money = new BigDecimal(userData.get("t_recharge_money").toString())
-						.multiply(new BigDecimal(cpsList.get(0).get("t_proportions").toString())
+						.multiply(new BigDecimal(cpsList.get(0).get("t_proportions").toString())//t_proportions  这个是提成比例
 								.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
 						.setScale(2, BigDecimal.ROUND_DOWN);
-
+				if(type == 1){
+					money = new BigDecimal(money+"")
+							.multiply(new BigDecimal("20")//t_proportions  这个是提成比例 谷歌也是新台币  目前按照 1：5 那就是百分之20   weitechao
+									.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
+							.setScale(2, BigDecimal.ROUND_DOWN);
+				}
 				String inSql = " INSERT INTO t_cps_devote (t_cps_id, t_user_id, t_devote_value, t_create_time, t_ratio, t_recharge_money, t_source_id) VALUES (?,?,?,?,?,?,?)";
 
 				this.executeSQL(inSql, cpsList.get(0).get("t_id"), userData.get("t_user_id"), money,

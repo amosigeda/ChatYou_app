@@ -57,7 +57,7 @@ public interface VideoChatService {
 	 * @param roomId
 	 * @return
 	 */
-	public MessageUtil breakLink(int roomId,int type);
+	public MessageUtil breakLink(int userId , int roomId, int type);
 	/**
 	 * 用户申请挂断
 	 * @param userId

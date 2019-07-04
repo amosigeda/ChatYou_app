@@ -40,6 +40,7 @@ import com.google.api.services.androidpublisher.model.ProductPurchase;
 import com.yiliao.service.CallBackService;
 import com.yiliao.service.ConsumeService;
 import com.yiliao.util.Md5Util;
+import com.yiliao.util.MessageUtil;
 import com.yiliao.util.PrintUtil;
 import com.yiliao.util.SystemConfig;
 
@@ -137,7 +138,7 @@ public class PayCallbackControl {
 			// 支付成功!
 			if ("SUCCESS".equals(xmlToMap.get("return_code")) && "SUCCESS".equals(xmlToMap.get("result_code"))) {
 
-				this.consumeService.payNotify(xmlToMap.get("out_trade_no"), xmlToMap.get("transaction_id"));
+				this.consumeService.payNotify(xmlToMap.get("out_trade_no"), xmlToMap.get("transaction_id"),0);
 
 			}
 
@@ -182,7 +183,7 @@ public class PayCallbackControl {
 					// 处理支付成功逻辑
 					try {
 //						this.callBackService.alipayPaymentComplete(param.getOutTradeNo());
-						this.consumeService.payNotify(params.get("out_trade_no"), params.get("trade_no"));
+						this.consumeService.payNotify(params.get("out_trade_no"), params.get("trade_no"),0);
 					} catch (Exception e) {
 						logger.error("支付宝回调业务处理报错,params:" + params, e);
 					}
@@ -326,7 +327,7 @@ public class PayCallbackControl {
 						new BigDecimal(parMap.get("AMOUNT").toString()))) {
 					logger.info("--支付金额验证成功---");
 					// 修改用户充值结果
-					this.consumeService.payNotify(parMap.get("ORDER_ID").toString(), null);
+					this.consumeService.payNotify(parMap.get("ORDER_ID").toString(), null, 1);
 
 				}
 			}
@@ -391,7 +392,7 @@ public class PayCallbackControl {
 				if (this.consumeService.checkMoney(parMap.get("ORDER_ID").toString(),
 						new BigDecimal(parMap.get("AMOUNT").toString()))) {
 					// 修改用户充值结果
-					this.consumeService.payNotify(parMap.get("ORDER_ID").toString(), null);
+					this.consumeService.payNotify(parMap.get("ORDER_ID").toString(), null, 1);
 
 				}
 			}
@@ -407,7 +408,7 @@ public class PayCallbackControl {
 	 */
 	@RequestMapping(value = { "validationGooglePay" }, method = RequestMethod.POST)
 	@ResponseBody
-	public void validationGooglePay(HttpServletRequest req) {
+	public MessageUtil validationGooglePay(HttpServletRequest req) {
 		try {
 
 			String productId = req.getParameter("productId");
@@ -416,7 +417,7 @@ public class PayCallbackControl {
 			int purchaseState = Integer.parseInt(req.getParameter("purchaseState"));
 			if (purchaseState != 0) {
 				logger.error("订单未支付!");
-				return;
+				return new MessageUtil(-1, "订单未支付");
 			}
 			logger.info("productId->{},packageName->{},purchaseToken->{},purchaseState->{}", productId, packageName,
 					purchaseToken, purchaseState);
@@ -439,18 +440,40 @@ public class PayCallbackControl {
 				ProductPurchase purchase = product.execute();
 				if (purchase.getPurchaseState() != 0) {
 					logger.error("订单未支付!");
-					return;
+					return new MessageUtil(-1, "订单未支付");
 				}
 				// 修改订单
-				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"));
-
+				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"),1);
+				
+				return new MessageUtil(1, "接口调用成功!");
 			} catch (Exception e) {
 				logger.error("订单验证失败! ", e);
+				return new MessageUtil(-2, "订单验证失败.");
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
+			return new MessageUtil(0, "程序异常!");
 		}
 	}
+	
+	
+	/**
+	 * IOS 支付回调
+	 * 
+	 * @param req
+	 */
+	@RequestMapping(value = { "validationIOSPay" }, method = RequestMethod.POST)
+	@ResponseBody
+	public MessageUtil validationIOSPay(HttpServletRequest req) {
+		try {
+				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"),0);
+				return new MessageUtil(1, "接口调用成功!");
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new MessageUtil(0, "程序异常!");
+		}
+	}
+
 
 }

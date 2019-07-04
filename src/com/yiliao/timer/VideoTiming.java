@@ -120,7 +120,7 @@ public class VideoTiming{
 					
 					RoomTimer.useRooms.put(map.getValue().get("roomId"), room);
 				}
-				videoChatService.breakLink(room.getRoomId(),5);
+				videoChatService.breakLink(room.getLaunchUserId(), room.getRoomId(),5);
 				
 				// 清除当前已计算了结果了的
 				clearUser.remove(map.getKey());

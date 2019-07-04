@@ -41,7 +41,7 @@ public class ProhibitServiceImpl extends ICommServiceImpl implements ProhibitSer
 				if("porn".equals(json.getString("label")) && new BigDecimal(json.getString("rate")).setScale(1, BigDecimal.ROUND_DOWN).compareTo(BigDecimal.valueOf(0.9))>=0) {
 					int userId = Integer.parseInt(str[0]);
 					int roomId = Integer.parseInt(str[1]);
-					videoChatService.breakLink(roomId, 3);
+					videoChatService.breakLink(userId,roomId, 3);
 					//存储违规信息
 					String inSql = " INSERT INTO t_yellowing_error (t_user_id, t_content,t_room_msg,t_create_time) VALUES (?, ?,?, ?) ";
 					this.executeSQL(inSql, userId, json.toString(),roomId, DateUtils.format(new Date(), DateUtils.FullDatePattern));
@@ -63,7 +63,7 @@ public class ProhibitServiceImpl extends ICommServiceImpl implements ProhibitSer
 			VideoChatService videoChatService = (VideoChatService) SpringConfig.getInstance()
 					.getBean("videoChatService");
 			// 挂断连线
-			videoChatService.breakLink(roomId, 3);
+			videoChatService.breakLink(userid, roomId, 3);
 
 			// 调用用户的处理
 			handleIllegalityUser(Integer.valueOf(userid),videoUrl);

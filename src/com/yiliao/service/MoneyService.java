@@ -74,5 +74,21 @@ public interface MoneyService {
 	 * @return
 	 */
 	MessageUtil getProfitAndPayTotal(int userId,int year,int month);
+
+	/**
+	 * 添加银行卡信息
+	 * @return
+	 */
+	public MessageUtil addBankCard(int userId, String place, String bank, String branchBank, String bankCard,
+			String nickName, String remark);
+	
+	/**
+	 * 获取银行卡信息
+	 * @return
+	 */
+	public MessageUtil getBankCardInfo(int userId);
+
+	public MessageUtil updateBankCardInfo(int t_id,int userId, String place, String bank, String branchBank, String bankCard,
+			String nickName, String remark);
 	
 }

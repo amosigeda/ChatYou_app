@@ -188,6 +188,75 @@ public class MoneyControl {
 				param.getInt("putForwardId"));
 
 	}
+	
+	/**
+	 * 增加银行卡
+	 * 
+	 * 用户id  userId
+地點place
+銀行bank
+分行branchBank
+帳號bankCard
+戶名nickName
+備註remark
+
+	 */
+	@RequestMapping(value = "addBankCardInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageUtil addBankCard(HttpServletRequest req) {
+		// 解密参数
+		JSONObject param = RSACoderUtil.privateDecrypt(req);
+		// 验证传递的参数
+		if (!BaseUtil.params(param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
+				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"))) {
+			// 返回数据
+			return new MessageUtil(-500, "服务器拒绝执行请求!");
+		}
+		return this.moneyService.addBankCard(param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
+				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"));
+	}
+	
+	
+	
+	/**
+	 * 获取银行卡信息
+	 *
+	 * @param response
+	 */
+	@RequestMapping(value = "getBankCardInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageUtil getBankCardInfo(HttpServletRequest req) {
+		// 解密参数
+		JSONObject param = RSACoderUtil.privateDecrypt(req);
+		// 验证传递的参数
+		if (!BaseUtil.params(param.getInt("userId"))) {
+			// 返回数据
+			return new MessageUtil(-500, "服务器拒绝执行请求!");
+		}
+		return this.moneyService.getBankCardInfo(param.getInt("userId"));
+	}
+	
+	
+	/**
+	 * 修改银行卡信息
+	 * @param response
+	 */
+	@RequestMapping(value = "udpateBankCardInfo", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageUtil udpateBankCard(HttpServletRequest req) {
+		// 解密参数
+		JSONObject param = RSACoderUtil.privateDecrypt(req);
+		// 验证传递的参数
+		if (!BaseUtil.params(param.getInt("t_id"),param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
+				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"))) {
+			// 返回数据
+			return new MessageUtil(-500, "服务器拒绝执行请求!");
+		}
+		return this.moneyService.updateBankCardInfo(param.getInt("t_id"), param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
+				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"));
+	}
+	
+	
 
 	/**
 	 * 获取用户金币明细
