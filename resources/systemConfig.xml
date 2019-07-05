@@ -3,7 +3,8 @@
 <!-- 支付宝相关 -->
 <properties>
     <!-- 推流地址 -->
-    <entry key="play_addr">rtmp://yiliao26.pullyl.3ttech.cn/yiliao26/</entry>
+   <!--  <entry key="play_addr">rtmp://yiliao26.pullyl.3ttech.cn/yiliao26/</entry> -->
+    <entry key="play_addr">rtmp://pili-live-rtmp.chatyou8.com/chatyou8/</entry>
     <!-- 项目名称 -->
     <entry key="projectName">巧遇</entry>
     <!-- 支付宝回调地址 -->

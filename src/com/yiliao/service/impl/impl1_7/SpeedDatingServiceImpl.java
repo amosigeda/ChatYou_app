@@ -119,6 +119,14 @@ public class SpeedDatingServiceImpl extends ICommServiceImpl implements SpeedDat
 			}else {
 				userData.put("isFollow", 0);
 			}
+			/*
+			 * 
+			 * {"m_istatus":1,"m_object":
+			 * {"isFollow":0,"roomId":4,"rtmp":"rtmp://yiliao26.pullyl.3ttech.cn/yiliao26/7/4","t_age":20,
+			 * "t_city":"北京",
+			 * "t_handImg":"http://chat-u-1258903946.cos.ap-hongkong.myqcloud.com/ios/15589476502704.png",
+			 * "t_id":7,"t_idcard":10007,"t_nickName":"聊友:10007","t_vocation":"模特"}}
+			 * */
 			
 			return new MessageUtil(1, userData);
 		} catch (Exception e) {

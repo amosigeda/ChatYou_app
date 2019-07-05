@@ -41,7 +41,7 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 
 			// 查询头像 和昵称和用户金币
 			Map<String, Object> userMap = this.getMap(
-					"SELECT u.t_nickName AS nickName,u.t_phone,u.t_sex,u.t_age,u.t_handImg AS handImg,u.t_role,u.t_autograph,u.t_is_vip,u.t_is_not_disturb,SUM(b.t_profit_money+b.t_recharge_money+b.t_share_money) AS amount,SUM(b.t_profit_money+b.t_share_money) AS extractGold,u.t_idcard FROM t_user u LEFT JOIN t_balance b ON (u.t_id = b.t_user_id) WHERE u.t_id =  ?",
+					"SELECT u.t_nickName AS nickName,u.t_phone,u.t_sex,u.t_age,u.t_handImg AS handImg,u.t_role,u.t_autograph,u.t_is_vip,u.t_is_not_disturb,SUM(b.t_profit_money+b.t_recharge_money+b.t_share_money) AS amount,SUM(b.t_profit_money+b.t_share_money) AS extractGold,u.t_idcard,u.t_camera_switch FROM t_user u LEFT JOIN t_balance b ON (u.t_id = b.t_user_id) WHERE u.t_id =  ?",
 					userId);
 
 			userMap.put("amount",
