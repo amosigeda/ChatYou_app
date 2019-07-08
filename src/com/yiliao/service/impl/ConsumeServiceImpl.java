@@ -1001,9 +1001,27 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 						.multiply(new BigDecimal(cpsList.get(0).get("t_proportions").toString())//t_proportions  这个是提成比例
 								.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
 						.setScale(2, BigDecimal.ROUND_DOWN);
+				
+				/*
+				 * 支付宝X1   微信 X1  pepayX0.2  Google payX0.2X0.7   iPhoneX0.7
+				 *         0            1            2                   3  
+				 * */
+				
 				if(type == 1){
 					money = new BigDecimal(money+"")
 							.multiply(new BigDecimal("20")//t_proportions  这个是提成比例 谷歌也是新台币  目前按照 1：5 那就是百分之20   weitechao
+									.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
+							.setScale(2, BigDecimal.ROUND_DOWN);
+				}
+				if(type == 2){
+					money = new BigDecimal(money+"")
+							.multiply(new BigDecimal("14")//t_proportions  这个是提成比例 谷歌也是新台币  目前按照 1：5 那就是百分之20   weitechao
+									.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
+							.setScale(2, BigDecimal.ROUND_DOWN);
+				}
+				if(type == 3){
+					money = new BigDecimal(money+"")
+							.multiply(new BigDecimal("70")//t_proportions  这个是提成比例 谷歌也是新台币  目前按照 1：5 那就是百分之20   weitechao
 									.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
 							.setScale(2, BigDecimal.ROUND_DOWN);
 				}

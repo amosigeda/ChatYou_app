@@ -186,12 +186,12 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 	public synchronized MessageUtil confirmPutforward(int dataId, int userId, int putForwardId) {
 		try {
 			// 查询用户的数据编号
-//			String qSql = "SELECT t_id FROM t_put_forward_data WHERE t_id = ? ";
-			/*List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql,
-					putForwardId);*/
-			String qSql = "SELECT t_id FROM t_put_forward_data WHERE t_user_id = ? ";
+		    String qSql = "SELECT t_id FROM t_put_forward_data WHERE t_id = ? ";
 			List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql,
-					userId);
+					putForwardId);
+			/*String qSql = "SELECT t_id FROM t_put_forward_data WHERE t_user_id = ? ";
+			List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql,
+					userId);*/
 
 			if (null == userData || userData.isEmpty()) {
 				return new MessageUtil(0, "暂未绑定微信或支付宝账号或银行卡资料.");

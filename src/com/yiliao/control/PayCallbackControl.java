@@ -443,7 +443,7 @@ public class PayCallbackControl {
 					return new MessageUtil(-1, "订单未支付");
 				}
 				// 修改订单
-				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"),1);
+				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"),2);
 				
 				return new MessageUtil(1, "接口调用成功!");
 			} catch (Exception e) {
@@ -467,7 +467,7 @@ public class PayCallbackControl {
 	@ResponseBody
 	public MessageUtil validationIOSPay(HttpServletRequest req) {
 		try {
-				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"),0);
+				this.consumeService.payNotify(req.getParameter("serviceOrderId"), req.getParameter("orderId"),3);
 				return new MessageUtil(1, "接口调用成功!");
 		} catch (Exception e) {
 			e.printStackTrace();
