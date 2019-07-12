@@ -893,7 +893,7 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 	}
 
 	@Override
-	public MessageUtil addBankCard(int userId, String place, String bank, String branchBank, String bankCard,
+	public MessageUtil addBankCard(String userId, String place, String bank, String branchBank, String bankCard,
 			String nickName, String remark) {
 
 		try {
@@ -904,7 +904,7 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 			if (null == userData || userData.isEmpty()) {
 
 				// 新增银行卡
-				String sql = "INSERT INTO t_put_forward_data (t_user_id, t_real_name, t_account_number, t_create_time, t_type, t_place, t_bank, t_branch_bank, t_remark) VALUES (?,?,?,?,?,?,?,?,?) ";
+				String sql = "INSERT INTO t_put_forward_data (t_user_id, t_real_name, t_account_number, t_create_time, t_type, t_place, t_bank, t_branch_bank, t_remark) VALUES (?,?,? ,?,?,? ,?,?,?) ";
 				this.getFinalDao().getIEntitySQLDAO().executeSQL(sql, userId, nickName, bankCard,
 						DateUtils.format(new Date(), "yyyy-MM-dd HH:mm:ss"), 3, place, bank, branchBank, remark);
 				return new MessageUtil(1, "添加成功!");
@@ -920,17 +920,20 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 	}
 
 	@Override
-	public MessageUtil getBankCardInfo(int userId) {
+	public MessageUtil getBankCardInfo(String userId) {
+		mu = new MessageUtil();
 		try {
-			String qSql = "SELECT t_id, t_real_name, t_account_number, t_create_time, t_place, t_bank, t_branch_bank, t_remark  FROM t_put_forward_data WHERE t_user_id = ? and t_type=3";
-			List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql, userId);
+			String qSql = "SELECT * FROM t_put_forward_data WHERE t_user_id = ? and t_type=3 limit 1";
+			Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO()
+					.findBySQLUniqueResultToMap(qSql, userId);
 			if (null == userData || userData.isEmpty()) {
 				mu.setM_istatus(0);
 				mu.setM_strMessage("请添加银行卡信息!");
-				return mu;
+			}else{
+				mu.setM_istatus(1);
+				mu.setM_object(userData);
+				logger.info("getBankCardInfo:"+mu.getM_object());
 			}
-			mu.setM_istatus(1);
-			mu.setM_object(userData);
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("获取银行卡异常!", e);
@@ -940,7 +943,7 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 	}
 
 	@Override
-	public MessageUtil updateBankCardInfo(int t_id, int userId, String place, String bank, String branchBank,
+	public MessageUtil updateBankCardInfo(String t_id, String userId, String place, String bank, String branchBank,
 			String bankCard, String nickName, String remark) {
 
 		try {

@@ -22,11 +22,15 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.LoggerFactory;
+
+import com.sun.media.jfxmedia.logging.Logger;
+import com.yiliao.control.PayCallbackControl;
 
 import net.sf.json.JSONObject;
 
 public class RSACoderUtil {
-
+	
 	public static final String CHARSET = "UTF-8";
 	public static final String RSA_ALGORITHM = "RSA";
 
@@ -133,7 +137,7 @@ public class RSACoderUtil {
 			if (StringUtils.isBlank(cipher_param)) {
 				return null;
 			}
-
+            
 			RSAPrivateKey privateKey = RSACoderUtil.getPrivateKey(SystemConfig.getValue("encrypt_private"));
 
 			Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
@@ -229,9 +233,18 @@ public class RSACoderUtil {
 		System.out.println("私钥： \n\r" + privateKey);
 //
 //		System.out.println("公钥加密——私钥解密");
+		/*
+		 * {"userId":1234,"place":"872018020142169","bank":"中国银行","branchBank":"中国银行分行","bankCard":"624661821212222行","nickName":"特特","remark":"测试"}
+		 * */
 //
 		JSONObject json = new JSONObject();
-		json.put("userId", "653");
+		json.put("userId", 653);
+		json.put("place", "872018020142169");
+		json.put("bank", "中国银行");
+		json.put("branchBank", "中国银行分行");
+		json.put("bankCard", "624661821212222行");
+		json.put("nickName", "特特");
+		json.put("remark", "测试特");
 
 		System.out.println("\r明文：\r\n" + json.toString());
 		System.out.println("\r明文大小：\r\n" + json.toString().getBytes().length);

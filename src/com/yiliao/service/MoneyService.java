@@ -79,16 +79,16 @@ public interface MoneyService {
 	 * 添加银行卡信息
 	 * @return
 	 */
-	public MessageUtil addBankCard(int userId, String place, String bank, String branchBank, String bankCard,
+	public MessageUtil addBankCard(String  userId, String place, String bank, String branchBank, String bankCard,
 			String nickName, String remark);
 	
 	/**
 	 * 获取银行卡信息
 	 * @return
 	 */
-	public MessageUtil getBankCardInfo(int userId);
+	public MessageUtil getBankCardInfo(String userId);
 
-	public MessageUtil updateBankCardInfo(int t_id,int userId, String place, String bank, String branchBank, String bankCard,
+	public MessageUtil updateBankCardInfo(String t_id,String userId, String place, String bank, String branchBank, String bankCard,
 			String nickName, String remark);
 	
 }

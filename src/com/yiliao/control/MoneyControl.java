@@ -1,13 +1,18 @@
 package com.yiliao.control;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.sun.media.jfxmedia.logging.Logger;
 import com.yiliao.service.MoneyService;
 import com.yiliao.util.BaseUtil;
 import com.yiliao.util.MessageUtil;
@@ -24,7 +29,7 @@ import net.sf.json.JSONObject;
 @Controller
 @RequestMapping("app")
 public class MoneyControl {
-
+	protected org.slf4j.Logger logger = LoggerFactory.getLogger(getClass());
 	@Autowired
 	private MoneyService moneyService;
 
@@ -92,13 +97,8 @@ public class MoneyControl {
 	}
 
 	/**
-	 * 获取充值折扣
-	 * t_end_type 0.android
-	 *            1.iPhone
-	 *            2.pepay
-	 *            3.google pay
-	 *            4.iPhone 内购
-	 *       
+	 * 获取充值折扣 t_end_type 0.android 1.iPhone 2.pepay 3.google pay 4.iPhone 内购
+	 * 
 	 * @param response
 	 */
 	@RequestMapping(value = "getRechargeDiscount", method = RequestMethod.POST)
@@ -161,8 +161,8 @@ public class MoneyControl {
 		}
 
 		return this.moneyService.modifyPutForwardData(param.getInt("userId"), param.getString("t_real_name"),
-				param.getOrDefault("t_nick_name","").toString(), param.getString("t_account_number"), param.getInt("t_type"),
-				param.getOrDefault("t_head_img","").toString());
+				param.getOrDefault("t_nick_name", "").toString(), param.getString("t_account_number"),
+				param.getInt("t_type"), param.getOrDefault("t_head_img", "").toString());
 
 	}
 
@@ -188,36 +188,51 @@ public class MoneyControl {
 				param.getInt("putForwardId"));
 
 	}
-	
+
 	/**
 	 * 增加银行卡
 	 * 
-	 * 用户id  userId
-地點place
-銀行bank
-分行branchBank
-帳號bankCard
-戶名nickName
-備註remark
-
+	 * 用户id userId 地點place 銀行bank 分行branchBank 帳號bankCard 戶名nickName 備註remark
+	 * 
+	 * @throws IOException
+	 * 
 	 */
 	@RequestMapping(value = "addBankCardInfo", method = RequestMethod.POST)
 	@ResponseBody
-	public MessageUtil addBankCard(HttpServletRequest req) {
+	public MessageUtil addBankCardInfo(HttpServletRequest req) throws IOException {
+
 		// 解密参数
 		JSONObject param = RSACoderUtil.privateDecrypt(req);
+		// JSONObject param = JSONObject.fromObject(wholeStr);
 		// 验证传递的参数
-		if (!BaseUtil.params(param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
-				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"))) {
+		if (!BaseUtil.params(param.getString("userId"), param.getString("place"), param.getString("bank"),
+				param.getString("branchBank"), param.getString("bankCard"), param.getString("nickName"))) {
 			// 返回数据
 			return new MessageUtil(-500, "服务器拒绝执行请求!");
 		}
-		return this.moneyService.addBankCard(param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
-				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"));
+		return this.moneyService.addBankCard(param.getString("userId"), param.getString("place"),
+				param.getString("bank"), param.getString("branchBank"), param.getString("bankCard"),
+				param.getString("nickName"), param.getString("remark"));
 	}
-	
-	
-	
+
+	@RequestMapping(value = "addbank", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageUtil addbank(HttpServletRequest req) throws IOException {
+
+		// 解密参数
+		JSONObject param = RSACoderUtil.privateDecrypt(req);
+		// JSONObject param = JSONObject.fromObject(wholeStr);
+		// 验证传递的参数
+		if (!BaseUtil.params(param.getString("userId"), param.getString("place"), param.getString("bank"),
+				param.getString("branchBank"), param.getString("bankCard"), param.getString("nickName"))) {
+			// 返回数据
+			return new MessageUtil(-500, "服务器拒绝执行请求!");
+		}
+		return this.moneyService.addBankCard(param.getString("userId"), param.getString("place"),
+				param.getString("bank"), param.getString("branchBank"), param.getString("bankCard"),
+				param.getString("nickName"), param.getString("remark"));
+	}
+
 	/**
 	 * 获取银行卡信息
 	 *
@@ -229,16 +244,16 @@ public class MoneyControl {
 		// 解密参数
 		JSONObject param = RSACoderUtil.privateDecrypt(req);
 		// 验证传递的参数
-		if (!BaseUtil.params(param.getInt("userId"))) {
+		if (!BaseUtil.params(param.getString("userId"))) {
 			// 返回数据
 			return new MessageUtil(-500, "服务器拒绝执行请求!");
 		}
-		return this.moneyService.getBankCardInfo(param.getInt("userId"));
+		return this.moneyService.getBankCardInfo(param.getString("userId"));
 	}
-	
-	
+
 	/**
 	 * 修改银行卡信息
+	 * 
 	 * @param response
 	 */
 	@RequestMapping(value = "udpateBankCardInfo", method = RequestMethod.POST)
@@ -247,16 +262,16 @@ public class MoneyControl {
 		// 解密参数
 		JSONObject param = RSACoderUtil.privateDecrypt(req);
 		// 验证传递的参数
-		if (!BaseUtil.params(param.getInt("t_id"),param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
-				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"))) {
+		if (!BaseUtil.params(param.getString("t_id"), param.getString("userId"), param.getString("place"),
+				param.getString("bank"), param.getString("branchBank"), param.getString("bankCard"),
+				param.getString("nickName"))) {
 			// 返回数据
 			return new MessageUtil(-500, "服务器拒绝执行请求!");
 		}
-		return this.moneyService.updateBankCardInfo(param.getInt("t_id"), param.getInt("userId"), param.getString("place"),param.getString("bank"),param.getString("branchBank")
-				,param.getString("bankCard"), param.getString("nickName"), param.getString("remark"));
+		return this.moneyService.updateBankCardInfo(param.getString("t_id"), param.getString("userId"),
+				param.getString("place"), param.getString("bank"), param.getString("branchBank"),
+				param.getString("bankCard"), param.getString("nickName"), param.getString("remark"));
 	}
-	
-	
 
 	/**
 	 * 获取用户金币明细
@@ -274,8 +289,9 @@ public class MoneyControl {
 		// 解密参数
 		JSONObject param = RSACoderUtil.privateDecrypt(req);
 		// 验证传递的参数
-		if (!BaseUtil.params(param.getOrDefault("userId",0), param.getOrDefault("year",0), param.getOrDefault("month",0), param.getOrDefault("page",0))
-				|| param.getInt("queryType") < -1 || param.getInt("queryType") > 1) {
+		if (!BaseUtil.params(param.getOrDefault("userId", 0), param.getOrDefault("year", 0),
+				param.getOrDefault("month", 0), param.getOrDefault("page", 0)) || param.getInt("queryType") < -1
+				|| param.getInt("queryType") > 1) {
 			// 返回数据
 
 			return new MessageUtil(-500, "服务器拒绝执行请求!");
