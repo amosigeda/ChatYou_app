@@ -783,7 +783,7 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 	@Override
 	public MessageUtil updatePersonalData(int userId, String t_nickName, String t_phone, Integer t_height,
 			Double t_weight, String t_constellation, String t_city, String t_synopsis, String t_autograph,
-			String t_vocation, String t_weixin, Integer t_age, String t_handImg,int t_camera_switch) {
+			String t_vocation, String t_weixin, Integer t_age, String t_handImg) {
 		try {
 
 			String sql = "update t_user u set ";
@@ -867,7 +867,7 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 				sql = sql + " u.t_weixin = '" + t_weixin + "',";
 			}
 
-			sql = sql + " u.t_camera_switch = '" + t_camera_switch + "',";
+			//sql = sql + " u.t_camera_switch = '" + t_camera_switch + "',";
 			
 			if (sql.indexOf(",") > 0) {
 
@@ -2770,6 +2770,33 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	@Override
+	public MessageUtil updateCameraSwitch(String userId, String t_camera_switch) {
+		try {
+
+			String sql = "update t_user u set ";
+
+			sql = sql + " u.t_camera_switch = '" + t_camera_switch + "',";
+			
+			if (sql.indexOf(",") > 0) {
+
+				sql = sql.substring(0, sql.lastIndexOf(","));
+
+				sql = sql + "  WHERE u.t_id = ?";
+
+				logger.info("更新sql->{}", sql);
+
+				this.getFinalDao().getIEntitySQLDAO().executeSQL(sql, userId);
+			}
+			mu = new MessageUtil(1, "编辑资料成功!");
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error("{}修改资料异常", userId, e);
+			mu = new MessageUtil(0, "程序异常!");
+		}
+		return mu;
 	}
 
 }

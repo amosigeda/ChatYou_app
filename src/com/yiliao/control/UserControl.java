@@ -129,9 +129,25 @@ public class UserControl {
 				(String) param.getOrDefault("t_synopsis", null), (String) param.getOrDefault("t_autograph", null),
 				(String) param.getOrDefault("t_vocation", null), (String) param.getOrDefault("t_weixin", null),
 				Integer.parseInt(param.getOrDefault("t_age", 0).toString()),
-				(String) param.getOrDefault("t_handImg", null),param.getInt("t_camera_switch"));
+				(String) param.getOrDefault("t_handImg", null));
 
 	}
+	
+	/*
+	 * 专门修改摄像头*/
+	@RequestMapping(value = "updateCameraSwitch", method = RequestMethod.POST)
+	@ResponseBody
+	public MessageUtil updateCameraSwitch(HttpServletRequest req) {
+
+		JSONObject param = RSACoderUtil.privateDecrypt(req);
+		// 验证传递的参数
+		if (!BaseUtil.params(param.getString("userId"),param.getString("t_camera_switch"))) {
+			// 返回数据
+			return new MessageUtil(-500, "服务器拒绝执行请求!");
+		}
+		return this.personalCenterService.updateCameraSwitch(param.getString("userId"),param.getString("t_camera_switch"));
+	}
+	
 
 	/**
 	 * 获取标签列表
