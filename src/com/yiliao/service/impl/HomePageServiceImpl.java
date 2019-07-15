@@ -71,6 +71,8 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 			homeSql.append(")  ");
 //			homeSql.append(" AND a.t_state !=2 ");
 			homeSql.append("GROUP BY u.t_id ");
+			
+			logger.info("homeSql:"+homeSql);
 			// 统计总记录数
 			Map<String, Object> total = this.getMap("SELECT COUNT(aa.t_id) AS total FROM (" + homeSql + ") aa");
 			// 获取数据
@@ -90,8 +92,16 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 				// 是否存在公共视频
 				m.put("t_is_public", Integer.parseInt(userVideo.get("total").toString()) > 0 ? 1 : 0);
 				m.put("t_score", avgScore(Integer.parseInt(m.get("t_id").toString())));
+				
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(m.get("t_id").toString()));
+		         if(userData != null){
+		        	 m.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 m.put("t_camera_switch",0);
+		         }
 			}
-
 			mu = new MessageUtil();
 			mu.setM_istatus(1);
 			mu.setM_object(new HashMap<String, Object>() {
@@ -100,7 +110,6 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 					put("data", dataList);
 				}
 			});
-
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("获取主播列表异常!", e);
@@ -387,8 +396,16 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 						Integer.parseInt(m.get("t_id").toString()));
 				// 是否存在公共视频
 				m.put("t_is_public", Integer.parseInt(userVideo.get("total").toString()) > 0 ? 1 : 0);
-
 				m.remove("t_user_type");
+				
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(m.get("t_id").toString()));
+		         if(userData != null){
+		        	 m.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 m.put("t_camera_switch",0);
+		         }
 
 			}
 
@@ -544,6 +561,15 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 				} else {
 					m.put("grade", this.grade(new BigDecimal(regList.get(0).get("money").toString()).intValue()));
 				}
+				
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(m.get("t_id").toString()));
+		         if(userData != null){
+		        	 m.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 m.put("t_camera_switch",0);
+		         }
 
 			}
 			mu = new MessageUtil();
@@ -1036,6 +1062,15 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 				// 是否存在公共视频
 				m.put("t_is_public", Integer.parseInt(userVideo.get("total").toString()) > 0 ? 1 : 0);
 				m.put("t_score", avgScore(Integer.parseInt(m.get("t_id").toString())));
+				
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(m.get("t_id").toString()));
+		         if(userData != null){
+		        	 m.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 m.put("t_camera_switch",0);
+		         }
 			}
 
 			mu = new MessageUtil();
@@ -1043,7 +1078,7 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 			mu.setM_object(new HashMap<String,Object>(){{
 				put("data", dataList);
 			}});
-
+	  
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("{}获取推荐主播列表异常!", userId, e);
@@ -1105,6 +1140,15 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 						Integer.parseInt(m.get("t_id").toString()));
 				m.put("t_is_public", Integer.parseInt(userVideo.get("total").toString()) > 0 ? 1 : 0);
 				m.put("t_score", avgScore(Integer.parseInt(m.get("t_id").toString())));
+				
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(m.get("t_id").toString()));
+		         if(userData != null){
+		        	 m.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 m.put("t_camera_switch",0);
+		         }
 			}
 
 			mu = new MessageUtil(1,new HashMap<String,Object>(){{
@@ -1165,6 +1209,15 @@ public class HomePageServiceImpl extends ICommServiceImpl implements HomePageSer
 						Integer.parseInt(m.get("t_id").toString()));
 				m.put("t_is_public", Integer.parseInt(userVideo.get("total").toString()) > 0 ? 1 : 0);
 				m.put("t_score", avgScore(Integer.parseInt(m.get("t_id").toString())));
+				
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(m.get("t_id").toString()));
+		         if(userData != null){
+		        	 m.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 m.put("t_camera_switch",0);
+		         }
 			}
 
 			mu = new MessageUtil(1, new HashMap<String,Object>() {{

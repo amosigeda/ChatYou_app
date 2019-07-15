@@ -148,6 +148,17 @@ public class NearbyServiceImpl extends ICommServiceImpl implements
 				 
 				 BigDecimal bd = new BigDecimal(null == s.get("distance")?"0":s.get("distance").toString());
 				 s.put("distance", bd.setScale(1, BigDecimal.ROUND_DOWN));
+				 
+				 
+				 String    sqlWei = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+		         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sqlWei,
+		        		 Integer.parseInt(s.get("t_id").toString()));
+		         if(userData != null){
+		        	 s.put("t_camera_switch",userData.get("t_camera_switch"));
+		         }else{
+		        	 s.put("t_camera_switch",0);
+		         }
+		         
 			});
 			
 			return new MessageUtil(1, new HashMap<String,Object>(){{

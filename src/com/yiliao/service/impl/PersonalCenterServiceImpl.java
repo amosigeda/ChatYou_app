@@ -669,6 +669,18 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 					coverUserId);
 
 			dataMap.put("lunbotu", carouselMap);
+			
+			// 查询个人信息
+	        sql = "SELECT  t_camera_switch FROM t_user  WHERE t_id = ?";
+
+	         Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(sql,
+	    		coverUserId);
+	    if(userData != null){
+	    	dataMap.put("t_camera_switch",userData.get("t_camera_switch"));
+	    }else{
+	    	dataMap.put("t_camera_switch",0);
+	    }
+	   
 
 			// 查询视频 微信 手机号需要的金币数
 			sql = "SELECT t_video_gold,t_phone_gold,t_weixin_gold,t_text_gold FROM t_anchor_setup WHERE t_user_id = ?";

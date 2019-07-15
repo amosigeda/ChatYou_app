@@ -923,21 +923,24 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 	public MessageUtil getBankCardInfo(String userId) {
 		mu = new MessageUtil();
 		try {
-			String qSql = "SELECT * FROM t_put_forward_data WHERE t_user_id = ? and t_type=3 limit 1";
+			String qSql = "SELECT * FROM t_put_forward_data WHERE t_user_id = "+ userId +" and t_type=3 limit 1";
 			Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO()
-					.findBySQLUniqueResultToMap(qSql, userId);
+					.findBySQLUniqueResultToMap(qSql);
+			     
+	/*		String qSql = "SELECT * FROM t_put_forward_data WHERE t_user_id = ? and t_type=3 limit 1";
+			List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql, userId, t_id);*/
+			
 			if (null == userData || userData.isEmpty()) {
-				mu.setM_istatus(0);
-				mu.setM_strMessage("请添加银行卡信息!");
+				return new MessageUtil(0, "请添加银行卡信息!");
 			}else{
 				mu.setM_istatus(1);
 				mu.setM_object(userData);
-				logger.info("getBankCardInfo:"+mu.getM_object());
+				return mu;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("获取银行卡异常!", e);
-			mu = new MessageUtil(0, "程序异常!");
+			mu = new MessageUtil(0, "请添加银行卡信息!");
 		}
 		return mu;
 	}
