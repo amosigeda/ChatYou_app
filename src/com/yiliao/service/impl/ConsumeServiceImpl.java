@@ -294,7 +294,9 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 
 			// 获取当前用户角色
 			List<Map<String, Object>> user = this.getQuerySqlList(
-					"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? AND t_is_vip = 1 ", consumeUserId);
+//					"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? AND t_is_vip = 1 ", consumeUserId);//0.是  1.否 vip
+			"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? ", consumeUserId);//0.是  1.否 vip
+			
 
 			if (!getUserIsVip(consumeUserId) && (null == user || user.isEmpty())) {
 				// 获取对方收费设置

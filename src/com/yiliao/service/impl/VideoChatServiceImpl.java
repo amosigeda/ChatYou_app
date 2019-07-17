@@ -522,14 +522,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					int time = map.get("timing")%60==0?map.get("timing")/60:map.get("timing")/60+1;
 					
 					//计算本次链接一共消耗了多少金币
-					int gold = map.get("deplete")*time;
-					
-					logger.info("[{}]房间挂断链接,当前计时分钟数->{},消耗金币->{}",roomId,time,gold);
-					//如果当前消费金币数大于了用户的余额
-					//那么减少1分钟的计费
-					if(gold > map.get("gold")) {
-						gold = (map.get("timing")/60) * map.get("deplete");
-					}
+					int gold = 0;
 					
 					//先查询是不是VIP  weitechao
 					String sql = "SELECT t_is_vip FROM t_user WHERE t_id = ? ";
@@ -540,7 +533,19 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					if(isVip ==0 ){
 						Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou FROM t_system_setup limit 1 ");
 						int zhekou = Integer.parseInt(mapZhekou.get("t_zhekou").toString());
-						gold = gold*zhekou/100;
+						int zuiDi = Integer.parseInt(mapZhekou.get("t_zuidi").toString());
+						int jinBi = (map.get("deplete")-zhekou) > zuiDi ? (map.get("deplete")-zhekou):zuiDi;
+						
+						gold = jinBi*time;
+					}else{
+						gold = map.get("deplete")*time;
+					}
+					
+					logger.info("[{}]房间挂断链接,当前计时分钟数->{},消耗金币->{}",roomId,time,gold);
+					//如果当前消费金币数大于了用户的余额
+					//那么减少1分钟的计费
+					if(gold > map.get("gold")) {
+						gold = (map.get("timing")/60) * map.get("deplete");
 					}
 					
 					
