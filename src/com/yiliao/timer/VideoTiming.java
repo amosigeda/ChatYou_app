@@ -14,6 +14,7 @@ import com.yiliao.domain.NewRedPacketRes;
 import com.yiliao.domain.Room;
 import com.yiliao.domain.UserIoSession;
 import com.yiliao.service.VideoChatService;
+import com.yiliao.service.impl.ICommServiceImpl;
 import com.yiliao.util.Mid;
 import com.yiliao.util.SpringConfig;
 
@@ -24,7 +25,7 @@ import net.sf.json.JSONObject;
  * @author Administrator
  * 
  */
-public class VideoTiming{
+public class VideoTiming extends ICommServiceImpl{
 
 	// 需要计时的用户
 	/**
@@ -79,7 +80,14 @@ public class VideoTiming{
 						v.put("timing", v.get("timing") + 1);
 						//计算出当前当前用户是否住够下一分钟的金币
 						//如果不住够 那么提醒用户充值
-						if(v.get("gold") < v.get("deplete")*((timing==0?1:timing)+1) && !arr.contains(k)) {
+						String sql = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+						Map<String, Object> mapIsVip = this.getMap(sql, v.get("anthorId"));
+						int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+						if(isVip == 0){
+							Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+							int zhekou = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zhekou") + ""));
+							
+						if((v.get("gold")+zhekou) < v.get("deplete")*((timing==0?1:timing)+1) && !arr.contains(k)) {
 							logger.info("开始给{}推送金币不足",k);
 						    IoSession session = UserIoSession.getInstance().getMapIoSession(k);
 						    NewRedPacketRes np = new NewRedPacketRes();
@@ -88,6 +96,20 @@ public class VideoTiming{
 						    if(null != session)
 						      session.write(JSONObject.fromObject(np).toString());
 						    arr.add(k);
+						}
+						}else{
+							if(v.get("gold") < v.get("deplete")*((timing==0?1:timing)+1) && !arr.contains(k)) {
+								logger.info("开始给{}推送金币不足",k);
+							    IoSession session = UserIoSession.getInstance().getMapIoSession(k);
+							    NewRedPacketRes np = new NewRedPacketRes();
+							    np.setMid(Mid.notSufficientFunds);
+							    logger.info("session"+ session.toString());
+							    if(null != session)
+							      session.write(JSONObject.fromObject(np).toString());
+							    arr.add(k);
+							}
+							
+							
 						}
 					} else {
 						// 不足已聊天 加入到需要清理的用户Map

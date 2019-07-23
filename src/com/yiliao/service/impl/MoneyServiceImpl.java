@@ -391,7 +391,7 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 
 			// 得到数据明细
 			List<Map<String, Object>> queryList = this.getQuerySqlList(
-					"SELECT * FROM (" + bodySql + ") aa  LIMIT ? , 10;", userId,
+					"SELECT * FROM (" + bodySql + ") aa  order by t_id desc  LIMIT ? , 10;", userId,
 					DateUtils.getFirstDayOfMonth(year, month), DateUtils.getLastDayOfMonth(year, month),
 					(page - 1) * 10);
 

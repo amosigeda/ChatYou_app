@@ -48,7 +48,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	@Override
 	public MessageUtil getSpeedDatingRoom(int userId) {
 		try {
-			
+
 			if (RoomTimer.freeRooms.size() == 0) {
 				return new MessageUtil(0, "房间暂未生产.");
 			}
@@ -59,16 +59,16 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			RoomTimer.freeRooms.remove(0);
 
 			RoomTimer.useRooms.put(rm.getRoomId(), rm);
-			
+
 			return new MessageUtil(1, rm.getRoomId());
-			
+
 		} catch (Exception e) {
-			 e.printStackTrace();
-			 logger.error("{}获取速配房间号异常!",userId);
+			e.printStackTrace();
+			logger.error("{}获取速配房间号异常!", userId);
 		}
 		return null;
 	}
-	
+
 	@Override
 	public MessageUtil getImUserSig(int userId) {
 		try {
@@ -113,34 +113,65 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			// 获取被链接人每分钟需要消耗多少金币
 			String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
 
-			 List<Map<String, Object>> anchorList = this.getQuerySqlList(videoGoldSql, anthorId);
-			 
-			 if(anchorList.isEmpty()) {
-				 logger.info("当前主播编号-->{}",anthorId);
-				 return new MessageUtil(-1, "--对方不是主播--");
-			 }
-				 
-			 Map<String, Object> videoGold = anchorList.get(0);
+			List<Map<String, Object>> anchorList = this.getQuerySqlList(videoGoldSql, anthorId);
+
+			if (anchorList.isEmpty()) {
+				logger.info("当前主播编号-->{}", anthorId);
+				return new MessageUtil(-1, "--对方不是主播--");
+			}
+
+			Map<String, Object> videoGold = anchorList.get(0);
 
 			// 用户金额
 			BigDecimal userBal = new BigDecimal(userBalance.get("totalBalance").toString());
 			// 主播聊天金额
 			BigDecimal anthBal = new BigDecimal(videoGold.get("t_video_gold").toString());
 			
+			String sql = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+			Map<String, Object> mapIsVip = this.getMap(sql, userId);
+
+			int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是1不是
+			
+           if(isVip == 1){
 			// 判断用户的金币是否满足聊天计时
-			if (null == userBal || userBal.compareTo(anthBal) == -1 ) {
+			if (null == userBal || userBal.compareTo(anthBal) == -1) {
 				json.put("onlineState", -1);
 			} else {
-				if (userBal.compareTo(BigDecimal.valueOf(0)) > 0) {
+				if (userBal.compareTo(BigDecimal.valueOf(0)) > 0) { //就是钱够
 
-					if (userBal.compareTo(anthBal) == 0) {
+					if (userBal.compareTo(anthBal) == 0) {  //只够一分钟
 						json.put("onlineState", 1);
-					}else if (anthBal.multiply(BigDecimal.valueOf(2)).setScale(0, BigDecimal.ROUND_DOWN)
+					} else if (anthBal.multiply(BigDecimal.valueOf(2)).setScale(0, BigDecimal.ROUND_DOWN) 
 							.compareTo(userBal) >= 0 && userBal.compareTo(anthBal) > 0) {
 						json.put("onlineState", 1);
+						//主播的钱 *2  比用户的钱多 并且  用户的钱多主播多
 					}
 				}
 			}
+		}else{
+			
+			Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+			BigDecimal zhekou = new BigDecimal(mapZhekou.get("t_zhekou") + "");
+			BigDecimal zuiDi = new BigDecimal(mapZhekou.get("t_zuidi") + "");
+			
+			anthBal = userBal.subtract(zhekou).compareTo(zuiDi)==1 ? userBal.subtract(zhekou) : zuiDi;
+					// 判断用户的金币是否满足聊天计时
+					if (null == userBal || userBal.compareTo(anthBal) == -1) {
+						json.put("onlineState", -1);
+					} else {
+						if (userBal.compareTo(BigDecimal.valueOf(0)) > 0) { //就是钱够
+
+							if (userBal.compareTo(anthBal) == 0) {  //只够一分钟
+								json.put("onlineState", 1);
+							} else if (anthBal.multiply(BigDecimal.valueOf(2)).setScale(0, BigDecimal.ROUND_DOWN) 
+									.compareTo(userBal) >= 0 && userBal.compareTo(anthBal) > 0) {
+								json.put("onlineState", 1);
+								//主播的钱 *2  比用户的钱多 并且  用户的钱多主播多
+							}
+						}
+					}
+		
+		}
 
 			mu = new MessageUtil();
 			mu.setM_istatus(1);
@@ -157,7 +188,8 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	/*
 	 * 获取privateMapKey(non-Javadoc)
 	 * 
-	 * @see com.yiliao.service.VideoChatService#getVideoChatPriavteMapKey(int, int)
+	 * @see com.yiliao.service.VideoChatService#getVideoChatPriavteMapKey(int,
+	 * int)
 	 */
 	@Override
 	public MessageUtil getVideoChatPriavteMapKey(int userId, int roomId) {
@@ -206,8 +238,8 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 
 			// 销毁用户所有存在的房间信息 并把房间返回房间池
 			userHangupLink(launchUserId);
-			
-			if(launchUserId  == coverLinkUserId){
+
+			if (launchUserId == coverLinkUserId) {
 				return new MessageUtil(-7, "不能和自己进行视频聊天.");
 			}
 
@@ -219,10 +251,10 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 
 			// 获取被链接人每分钟需要消耗多少金币
 			String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
-			
-			List<Map<String,Object>> sqlList = this.getQuerySqlList(videoGoldSql, coverLinkUserId);
-			
-			if(sqlList.isEmpty()) {
+
+			List<Map<String, Object>> sqlList = this.getQuerySqlList(videoGoldSql, coverLinkUserId);
+
+			if (sqlList.isEmpty()) {
 
 				return new MessageUtil(-6, "主播资料未完善!无法发起聊天.");
 			}
@@ -234,8 +266,8 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			}
 
 			// 验证发起人和被链接人是否是同性别
-			if(sameSex(launchUserId, coverLinkUserId)) {
-				return new MessageUtil(-5,"同性别无法进行聊天!");
+			if (sameSex(launchUserId, coverLinkUserId)) {
+				return new MessageUtil(-5, "同性别无法进行聊天!");
 			}
 			// 查询当前用户呼叫的主播是否是虚拟主播
 			String qSql = " SELECT * FROM t_virtual WHERE t_user_id = ? ";
@@ -246,9 +278,9 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			if (null == virList || virList.isEmpty()) {
 
 				IoSession ioSession = UserIoSession.getInstance().getMapIoSession(coverLinkUserId);
- 
-				//获取主播是否正在连线中
-				if(RoomTimer.getUserIsBusy(coverLinkUserId)){
+
+				// 获取主播是否正在连线中
+				if (RoomTimer.getUserIsBusy(coverLinkUserId)) {
 
 					return new MessageUtil(-2, "你拨打的用户正忙,请稍后在拨.");
 				}
@@ -267,12 +299,13 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 				room.setCoverLinkUserId(coverLinkUserId);
 				room.setCallUserId(launchUserId);
 
-				//写入到通话记录中
-				saveCallLog(launchUserId, coverLinkUserId,roomId);
+				// 写入到通话记录中
+				saveCallLog(launchUserId, coverLinkUserId, roomId);
 
-				room.setLaunchUserLiveCode(SystemConfig.getValue("play_addr")+room.getLaunchUserId()+"/"+roomId);
-				room.setCoverLinkUserLiveCode(SystemConfig.getValue("play_addr")+room.getCoverLinkUserId()+"/"+roomId);
-				
+				room.setLaunchUserLiveCode(SystemConfig.getValue("play_addr") + room.getLaunchUserId() + "/" + roomId);
+				room.setCoverLinkUserLiveCode(
+						SystemConfig.getValue("play_addr") + room.getCoverLinkUserId() + "/" + roomId);
+
 				RoomTimer.useRooms.put(roomId, room);
 				//
 				OnLineRes or = new OnLineRes();
@@ -288,9 +321,9 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 				// 获取链接人的昵称
 				Map<String, Object> userMap = this.getMap("SELECT t_nickName FROM t_user WHERE t_id = ?", launchUserId);
 
-				this.applicationContext.publishEvent(new PushMesgEvnet(
-						new MessageEntity(coverLinkUserId, userMap.get("t_nickName")+"邀请您进行视频聊天!", 0, new Date(),6,roomId,launchUserId,0)));
-			}else{
+				this.applicationContext.publishEvent(new PushMesgEvnet(new MessageEntity(coverLinkUserId,
+						userMap.get("t_nickName") + "邀请您进行视频聊天!", 0, new Date(), 6, roomId, launchUserId, 0)));
+			} else {
 
 				// 查询当前虚拟主播是否在忙碌或者离线状态
 				qSql = " SELECT t_state FROM t_anchor WHERE t_user_id = ? ";
@@ -322,144 +355,151 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 		try {
 
 			logger.info("[{}]房间开始计时,anthorId->{},userId->{}", roomId, anthorId, userId);
-			//获取用户是否正在计时当中
-			if(VideoTiming.timingUser.containsKey(userId)) {
-				//打印当前计时信息
-				logger.info("当前用户的计时信息为-->{}",JSONObject.fromObject(VideoTiming.timingUser.get(userId)).toString());
-				//判断当前用户的计时信息 是否和最新需要计时的信息一致
+			// 获取用户是否正在计时当中
+			if (VideoTiming.timingUser.containsKey(userId)) {
+				// 打印当前计时信息
+				logger.info("当前用户的计时信息为-->{}", JSONObject.fromObject(VideoTiming.timingUser.get(userId)).toString());
+				// 判断当前用户的计时信息 是否和最新需要计时的信息一致
 				Map<String, Integer> map = VideoTiming.timingUser.get(userId);
-				//判断当前计时中的主播和房间号是否一样 
-				//如果一致,表示重复调用计时 不用执行了
-				if(map.get("roomId") == roomId && map.get("anthorId") == anthorId) {
+				// 判断当前计时中的主播和房间号是否一样
+				// 如果一致,表示重复调用计时 不用执行了
+				if (map.get("roomId") == roomId && map.get("anthorId") == anthorId) {
 					return new MessageUtil(-6, "当前用户正在计时中.");
-				}else { //否则 调用挂断链接 程序继续执行
-					this.breakLink(userId,map.get("roomId"), 6);
+				} else { // 否则 调用挂断链接 程序继续执行
+					this.breakLink(userId, map.get("roomId"), 6);
 				}
 			}
-			
+
 			// 获取用户的所有金币
 			String goldSql = "SELECT SUM(t_recharge_money+t_profit_money+t_share_money) AS totalGold FROM t_balance WHERE t_user_id = ?";
 
 			Map<String, Object> totalGold = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(goldSql,
 					userId);
 
-			if (null == totalGold.get("totalGold") || new BigDecimal(0).compareTo(new BigDecimal(totalGold.get("totalGold").toString())) >= 0) {
+			if (null == totalGold.get("totalGold")
+					|| new BigDecimal(0).compareTo(new BigDecimal(totalGold.get("totalGold").toString())) >= 0) {
 				logger.info("{}用户余额为0或者负数", userId);
 				return new MessageUtil(-1, "余额不足!请充值.");
-			}else {
-				//判断用户余额是否住够聊天
+			} else {
+				// 判断用户余额是否住够聊天
 				// 获取被链接人每分钟需要消耗多少金币
 				String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
-				List<Map<String,Object>> sqlList = this.getQuerySqlList(videoGoldSql, anthorId);
-				
-				if(new BigDecimal(sqlList.get(0).get("t_video_gold").toString())
-						.compareTo(new BigDecimal(totalGold.get("totalGold").toString())) == 1 ) {
-					logger.info("用户余额-->{}",totalGold.get("totalGold").toString());
+				List<Map<String, Object>> sqlList = this.getQuerySqlList(videoGoldSql, anthorId);
+
+				if (new BigDecimal(sqlList.get(0).get("t_video_gold").toString())
+						.compareTo(new BigDecimal(totalGold.get("totalGold").toString())) == 1) {
+					logger.info("用户余额-->{}", totalGold.get("totalGold").toString());
 					return new MessageUtil(-1, "余额不足!请充值.");
 				}
-				
+
 			}
 
 			// 获取被链接人每分钟需要消耗多少金币
 			String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
-			
-			 List<Map<String,Object>> sqlList = this.getQuerySqlList(videoGoldSql, anthorId);
-			
-			 if(sqlList.isEmpty()) {
-				 return new MessageUtil(-2, "主播资料未完善!");
-			 }
-			 
-			 //判断房间是否还存在
-			 Room room = RoomTimer.useRooms.get(roomId);
-			 if(null == room) {
-				 room = VideoTiming.getRoom(roomId);
-			 }
-			 
-			 if(null == room) {
-				 return new MessageUtil(-5, "房间已丢失.");
-			 }
-			 //判断当前房间是否已经有人了
-			 if(0 !=room.getLaunchUserId() && room.getLaunchUserId() != userId) {
-				 return new MessageUtil(-4, "啊！被别人抢走了,下次手速要快哦.");
-			 }else if(room.getLaunchUserId() == 0) {
-				 //用户加入速配房间
-				 room.setLaunchUserId(userId);
-				 room.setCallUserId(userId);
-				//写入到通话记录中
-			    saveCallLog(userId, anthorId,roomId);
-			    
-				room.setLaunchUserLiveCode(SystemConfig.getValue("play_addr")+room.getLaunchUserId()+"/"+roomId);
-				room.setCoverLinkUserLiveCode(SystemConfig.getValue("play_addr")+room.getCoverLinkUserId()+"/"+roomId);
-			    
-			 }
-			 
-			 //房间已销毁
-			 if(room.getCoverLinkUserId() != anthorId || room.getLaunchUserId() != userId) {
-				 logger.info("{}房间已经销毁.",roomId);
-				 return new MessageUtil(-3, "对方挂断视频请求.");
-			 }
-			 
-			 logger.info("{}用户余额{}", userId, new BigDecimal(totalGold.get("totalGold").toString()).intValue());
-			 logger.info("{}主播每分钟视频收费{}", anthorId,new BigDecimal(sqlList.get(0).get("t_video_gold").toString()).intValue());
-			
+
+			List<Map<String, Object>> sqlList = this.getQuerySqlList(videoGoldSql, anthorId);
+
+			if (sqlList.isEmpty()) {
+				return new MessageUtil(-2, "主播资料未完善!");
+			}
+
+			// 判断房间是否还存在
+			Room room = RoomTimer.useRooms.get(roomId);
+			if (null == room) {
+				room = VideoTiming.getRoom(roomId);
+			}
+
+			if (null == room) {
+				return new MessageUtil(-5, "房间已丢失.");
+			}
+			// 判断当前房间是否已经有人了
+			if (0 != room.getLaunchUserId() && room.getLaunchUserId() != userId) {
+				return new MessageUtil(-4, "啊！被别人抢走了,下次手速要快哦.");
+			} else if (room.getLaunchUserId() == 0) {
+				// 用户加入速配房间
+				room.setLaunchUserId(userId);
+				room.setCallUserId(userId);
+				// 写入到通话记录中
+				saveCallLog(userId, anthorId, roomId);
+
+				room.setLaunchUserLiveCode(SystemConfig.getValue("play_addr") + room.getLaunchUserId() + "/" + roomId);
+				room.setCoverLinkUserLiveCode(
+						SystemConfig.getValue("play_addr") + room.getCoverLinkUserId() + "/" + roomId);
+
+			}
+
+			// 房间已销毁
+			if (room.getCoverLinkUserId() != anthorId || room.getLaunchUserId() != userId) {
+				logger.info("{}房间已经销毁.", roomId);
+				return new MessageUtil(-3, "对方挂断视频请求.");
+			}
+
+			logger.info("{}用户余额{}", userId, new BigDecimal(totalGold.get("totalGold").toString()).intValue());
+			logger.info("{}主播每分钟视频收费{}", anthorId,
+					new BigDecimal(sqlList.get(0).get("t_video_gold").toString()).intValue());
+
 			// 加入到计时器中
 			Map<String, Integer> map = new HashMap<String, Integer>();
 			map.put("gold", new BigDecimal(totalGold.get("totalGold").toString()).intValue());
 			map.put("deplete", new BigDecimal(sqlList.get(0).get("t_video_gold").toString()).intValue());
 			map.put("timing", 0);
-			map.put("roomId", roomId); //房间号
-			map.put("anthorId", anthorId); //主播编号
- 
-			
-			logger.info("{}房间开始计时,anthorId->{},userId->{},加入到计时系统开始",roomId,anthorId,userId);
+			map.put("roomId", roomId); // 房间号
+			map.put("anthorId", anthorId); // 主播编号
+
+			logger.info("{}房间开始计时,anthorId->{},userId->{},加入到计时系统开始", roomId, anthorId, userId);
 
 			VideoTiming.timingUser.put(userId, map);
 
 			logger.info("{}房间开始计时,anthorId->{},userId->{},加入到计时系统完成", roomId, anthorId, userId);
 
 			// 链接信息写入到数据库中
-			this.executeSQL("INSERT INTO t_room_time (t_room_id, t_call_user_id, t_answer_user_id,t_an_vi_gold, t_create_time) VALUES (?, ?, ?, ?, ?);",
-					roomId,userId,anthorId,map.get("deplete"),DateUtils.format(new Date(), DateUtils.FullDatePattern));
+			this.executeSQL(
+					"INSERT INTO t_room_time (t_room_id, t_call_user_id, t_answer_user_id,t_an_vi_gold, t_create_time) VALUES (?, ?, ?, ?, ?);",
+					roomId, userId, anthorId, map.get("deplete"),
+					DateUtils.format(new Date(), DateUtils.FullDatePattern));
 
-		
 			TransactionStatus status = this.getStatus(); // 获得事务状态
 			// 修改主播状态为忙碌
 			this.executeSQL("UPDATE t_anchor SET t_state=1 WHERE  t_user_id = ?;", anthorId);
-			//提交事物
+			// 提交事物
 			this.getTxManager().commit(status);
-			
-			/***********监控程序***********/
-			if(null != room) {
-				//异步通知 
+
+			/*********** 监控程序 ***********/
+			if (null != room) {
+				// 异步通知
 				this.applicationContext.publishEvent(new PushLinkUser(RoomTimer.useRooms.get(roomId)));
 			}
 			/***************************/
-			
-			/*********推送视频提示语***********/
-			//链接人
-			//获取提示信息
-			 List<Map<String, Object>> tipsList = this.getQuerySqlList("SELECT t_video_hint FROM t_system_setup ");
-			 //如果后台填写了 提示信息
-			 if(!tipsList.isEmpty()) {
-				 //链接人session
-				 IoSession callUserIoSession = UserIoSession.getInstance().getMapIoSession(room.getLaunchUserId());
-				 if(null != callUserIoSession && !callUserIoSession.isClosing()) {
-					 //推送 提示信息
-					 callUserIoSession.write(JSONObject.fromObject(new HashMap<String,Object>(){{
-						 put("mid", Mid.sendVideoTipsMsg);
-						 put("msgContent", tipsList.get(0).get("t_video_hint"));
-					 }}).toString());
-				 }
-				 //被链接人 session
-				 IoSession coverUserIoSession = UserIoSession.getInstance().getMapIoSession(room.getCoverLinkUserId());
-				 if(null != coverUserIoSession && !coverUserIoSession.isClosing()) {
-					 coverUserIoSession.write(JSONObject.fromObject(new HashMap<String,Object>(){{
-						 put("mid", Mid.sendVideoTipsMsg);
-						 put("msgContent", tipsList.get(0).get("t_video_hint"));
-					 }}).toString());
-				 }
-			 }
-			 
+
+			/********* 推送视频提示语 ***********/
+			// 链接人
+			// 获取提示信息
+			List<Map<String, Object>> tipsList = this.getQuerySqlList("SELECT t_video_hint FROM t_system_setup ");
+			// 如果后台填写了 提示信息
+			if (!tipsList.isEmpty()) {
+				// 链接人session
+				IoSession callUserIoSession = UserIoSession.getInstance().getMapIoSession(room.getLaunchUserId());
+				if (null != callUserIoSession && !callUserIoSession.isClosing()) {
+					// 推送 提示信息
+					callUserIoSession.write(JSONObject.fromObject(new HashMap<String, Object>() {
+						{
+							put("mid", Mid.sendVideoTipsMsg);
+							put("msgContent", tipsList.get(0).get("t_video_hint"));
+						}
+					}).toString());
+				}
+				// 被链接人 session
+				IoSession coverUserIoSession = UserIoSession.getInstance().getMapIoSession(room.getCoverLinkUserId());
+				if (null != coverUserIoSession && !coverUserIoSession.isClosing()) {
+					coverUserIoSession.write(JSONObject.fromObject(new HashMap<String, Object>() {
+						{
+							put("mid", Mid.sendVideoTipsMsg);
+							put("msgContent", tipsList.get(0).get("t_video_hint"));
+						}
+					}).toString());
+				}
+			}
+
 			/******************************/
 
 			mu = new MessageUtil(1, "开始计时");
@@ -478,21 +518,22 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	 * @see com.yiliao.service.VideoChatService#breakLink(int, int)
 	 */
 	@Override
-	public MessageUtil breakLink(int userIdd,int roomId, int type) {
+	public MessageUtil breakLink(int userIdd, int roomId, int type) {
 		try {
-			
+
 			logger.info("roomId ->{},开始结算.,挂断类型->{},1.用户主动挂断链接,"
-					+ "2.用户断开链接或者发起呼叫断开链接,3.用户违规,4.socket断开链接,5.计费时间不足挂断链接,6.发起新的计时(上次挂断失败.)",roomId,type);
-			/*获取房间信息*/
- 
+					+ "2.用户断开链接或者发起呼叫断开链接,3.用户违规,4.socket断开链接,5.计费时间不足挂断链接,6.发起新的计时(上次挂断失败.)", roomId, type);
+			/* 获取房间信息 */
+
 			Room room = RoomTimer.useRooms.get(roomId);
-			
-			if((null != room && 0 != room.getLaunchUserId() && 0 != room.getCoverLinkUserId()) || (null != VideoTiming.getRoom(roomId))){
-			    logger.info("---{}房间进入了结算代码块--",roomId);
-				if(null == room) {
+
+			if ((null != room && 0 != room.getLaunchUserId() && 0 != room.getCoverLinkUserId())
+					|| (null != VideoTiming.getRoom(roomId))) {
+				logger.info("---{}房间进入了结算代码块--", roomId);
+				if (null == room) {
 					room = VideoTiming.getRoom(roomId);
 				}
-				
+
 				// 给链接用户推送挂断信息
 				IoSession ioSession = UserIoSession.getInstance().getMapIoSession(room.getLaunchUserId());
 				if (null != ioSession) {
@@ -502,7 +543,8 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 				// 给被链接人推送挂断信息
 				IoSession coverIoSession = UserIoSession.getInstance().getMapIoSession(room.getCoverLinkUserId());
 				if (null != coverIoSession) {
-					coverIoSession.write(JSONObject.fromObject(new com.yiliao.domain.Mid(Mid.brokenLineRes)).toString());
+					coverIoSession
+							.write(JSONObject.fromObject(new com.yiliao.domain.Mid(Mid.brokenLineRes)).toString());
 				}
 
 				Map<String, Integer> map = VideoTiming.timingUser.get(room.getLaunchUserId());
@@ -517,58 +559,142 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 
 					// 删除正在计时的用户数据
 					VideoTiming.timingUser.remove(room.getLaunchUserId());
-					
-					//计算本次链接链接分钟数
-					int time = map.get("timing")%60==0?map.get("timing")/60:map.get("timing")/60+1;
-					
-					//计算本次链接一共消耗了多少金币
+
+					// 计算本次链接链接分钟数
+					int time = map.get("timing") % 60 == 0 ? map.get("timing") / 60 : map.get("timing") / 60 + 1;
+
+					// 计算本次链接一共消耗了多少金币
 					int gold = 0;
-					
-					//先查询是不是VIP  weitechao
-					String sql = "SELECT t_is_vip FROM t_user WHERE t_id = ? ";
+
+					// 先查询是不是VIP weitechao
+					String sql = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
 					Map<String, Object> mapIsVip = this.getMap(sql, userIdd);
-					
-					int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());//0是 1不是
-					//是VIP九进行优惠处理
-					if(isVip ==0 ){
-						Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou FROM t_system_setup limit 1 ");
-						int zhekou = Integer.parseInt(mapZhekou.get("t_zhekou").toString());
-						int zuiDi = Integer.parseInt(mapZhekou.get("t_zuidi").toString());
-						int jinBi = (map.get("deplete")-zhekou) > zuiDi ? (map.get("deplete")-zhekou):zuiDi;
-						
-						gold = jinBi*time;
-					}else{
-						gold = map.get("deplete")*time;
+
+					int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+																						// 1不是
+					int isRole = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0.普通用户
+																						// 1.主播
+					// 是VIP九进行优惠处理
+					logger.info("weitechao zong gong tong hua le min =" + time);
+					logger.info("weitechao cha xun shi bu shi vip =" + isVip);
+					logger.info("yi fen zhong deplete=" + map.get("deplete"));
+					logger.info("是不是普通用户0.普通用户 1.主播=" + isRole);
+					if (isRole == 0) {
+
+						if (isVip == 0) {
+							logger.info("is vip =" + isVip);
+							Map<String, Object> mapZhekou = this
+									.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+							int zhekou = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zhekou") + ""));
+							int zuiDi = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zuidi") + ""));
+
+							logger.info("zhekou=" + zhekou);
+							logger.info("zuidi=" + zuiDi);
+							if (map.get("deplete") - zhekou > zuiDi) {
+								gold = (map.get("deplete") - zhekou) * time;
+							} else {
+								gold = zuiDi * time;
+							}
+							// gold = jinBi*time;
+						} else {
+							logger.info("is not vip =" + isVip);
+							gold = map.get("deplete") * time;
+						}
+					} else {
+                       int launchUserId =  room.getLaunchUserId();
+                       int coverLinkUserId = room.getCoverLinkUserId();
+                       
+                       logger.info("是主播="+launchUserId+","+coverLinkUserId+",挂断人id："+userIdd);
+                       
+                       if(userIdd != launchUserId){
+                    	   String sqlL = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+       					Map<String, Object> mapIsVipP = this.getMap(sqlL, launchUserId);
+
+       					int isVipp = Integer.parseInt(mapIsVipP.get("t_is_vip").toString());// 0是
+       																						// 1不是
+       					
+   						if (isVipp == 0) {
+   							logger.info("is vip =" + isVip);
+   							Map<String, Object> mapZhekou = this
+   									.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+   							int zhekou = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zhekou") + ""));
+   							int zuiDi = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zuidi") + ""));
+
+   							logger.info("zhekou=" + zhekou);
+   							logger.info("zuidi=" + zuiDi);
+   							if (map.get("deplete") - zhekou > zuiDi) {
+   								gold = (map.get("deplete") - zhekou) * time;
+   							} else {
+   								gold = zuiDi * time;
+   							}
+   							// gold = jinBi*time;
+   						} else {
+   							logger.info("is not vip =" + isVip);
+   							gold = map.get("deplete") * time;
+   						}
+   					
+                       }
+                       if(userIdd != coverLinkUserId){
+
+                    	   String sqlL = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+       					Map<String, Object> mapIsVipP = this.getMap(sqlL, coverLinkUserId);
+
+       					int isVipp = Integer.parseInt(mapIsVipP.get("t_is_vip").toString());// 0是
+       																						// 1不是
+       					
+   						if (isVipp == 0) {
+   							logger.info("is vip =" + isVip);
+   							Map<String, Object> mapZhekou = this
+   									.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+   							int zhekou = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zhekou") + ""));
+   							int zuiDi = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zuidi") + ""));
+
+   							logger.info("zhekou=" + zhekou);
+   							logger.info("zuidi=" + zuiDi);
+   							if (map.get("deplete") - zhekou > zuiDi) {
+   								gold = (map.get("deplete") - zhekou) * time;
+   							} else {
+   								gold = zuiDi * time;
+   							}
+   							// gold = jinBi*time;
+   						} else {
+   							logger.info("is not vip =" + isVip);
+   							gold = map.get("deplete") * time;
+   						}
+   					
+                       
+                       }
 					}
-					
-					logger.info("[{}]房间挂断链接,当前计时分钟数->{},消耗金币->{}",roomId,time,gold);
-					//如果当前消费金币数大于了用户的余额
-					//那么减少1分钟的计费
-					if(gold > map.get("gold")) {
-						gold = (map.get("timing")/60) * map.get("deplete");
+
+					logger.info("weitechao [{}]房间挂断链接,当前计时分钟数->{},消耗金币->{}", roomId, time, gold);
+					// 如果当前消费金币数大于了用户的余额
+					// 那么减少1分钟的计费
+					if (gold > map.get("gold")) {
+						gold = (map.get("timing") / 60) * map.get("deplete");
 					}
-					
-					
-					//保存消费记录
-					int orderId = this.saveOrder(room.getLaunchUserId(), room.getCoverLinkUserId(), 0, WalletDetail.CHANGE_CATEGORY_VIDEO, new BigDecimal(gold),roomId,time);
-					//扣除用户金币 
-					if(goldComputeService.userConsume(room.getLaunchUserId(), WalletDetail.CHANGE_CATEGORY_VIDEO, new BigDecimal(gold),orderId)){
+
+					// 保存消费记录
+					int orderId = this.saveOrder(room.getLaunchUserId(), room.getCoverLinkUserId(), 0,
+							WalletDetail.CHANGE_CATEGORY_VIDEO, new BigDecimal(gold), roomId, time);
+					// 扣除用户金币
+					if (goldComputeService.userConsume(room.getLaunchUserId(), WalletDetail.CHANGE_CATEGORY_VIDEO,
+							new BigDecimal(gold), orderId)) {
 
 						// 分配用户的消费的金币
 						goldComputeService.distribution(new BigDecimal(gold), room.getLaunchUserId(),
 								room.getCoverLinkUserId(), WalletDetail.CHANGE_CATEGORY_VIDEO, orderId);
 
 					} else {
-						 logger.info("--当前用户{}在房间号{}中和{}聊天{}秒扣费异常,其中用户余额{}，主播每分钟消耗{}--",room.getLaunchUserId(),roomId,room.getCoverLinkUserId(),
-								 map.get("timing"),map.get("gold"),map.get("deplete"));
+						logger.info("--当前用户{}在房间号{}中和{}聊天{}秒扣费异常,其中用户余额{}，主播每分钟消耗{}--", room.getLaunchUserId(), roomId,
+								room.getCoverLinkUserId(), map.get("timing"), map.get("gold"), map.get("deplete"));
 					}
-					
-					logger.info("当前房间信息-->{}",JSONObject.fromObject(room).toString());
-					//把通话时间写入到通话记录中
-					if(room.getCallUserId() == room.getLaunchUserId()) {
-						updateCallLog(room.getLaunchUserId(), room.getCoverLinkUserId(),roomId, time);
-					}else {
-						updateCallLog(room.getCoverLinkUserId(),room.getLaunchUserId(),roomId , time);
+
+					logger.info("当前房间信息-->{}", JSONObject.fromObject(room).toString());
+					// 把通话时间写入到通话记录中
+					if (room.getCallUserId() == room.getLaunchUserId()) {
+    					updateCallLog(room.getLaunchUserId(), room.getCoverLinkUserId(), roomId, time);
+					} else {
+ 					updateCallLog(room.getCoverLinkUserId(), room.getLaunchUserId(), roomId, time);
 					}
 
 					receptionRate(room.getCoverLinkUserId(), 1);
@@ -598,13 +724,14 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					String sql = "SELECT t_role FROM t_user WHERE t_id = ? ";
 					Map<String, Object> map = this.getMap(sql, sqlList.get(0).get("t_answer_user_id"));
 
-					BigDecimal _video_gold =new BigDecimal(map.get("t_an_vi_gold").toString());
-					
+					BigDecimal _video_gold = new BigDecimal(map.get("t_an_vi_gold").toString());
+
 					int userId = Integer.parseInt(map.get("t_call_user_id").toString());
-					int anchorId = Integer.parseInt(map.get("t_answer_user_id").toString()); 
+					int anchorId = Integer.parseInt(map.get("t_answer_user_id").toString());
 
 					// 开始时间
-					long begin_time = DateUtils.parse(sqlList.get(0).get("t_create_time").toString(), DateUtils.FullDatePattern).getTime();
+					long begin_time = DateUtils
+							.parse(sqlList.get(0).get("t_create_time").toString(), DateUtils.FullDatePattern).getTime();
 					// 得到时间差
 					Long time_difference = (System.currentTimeMillis() - begin_time) / 1000;
 					// 计算本次链接链接分钟数
@@ -624,55 +751,60 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					IoSession coverIoSession = UserIoSession.getInstance()
 							.getMapIoSession(Integer.parseInt(sqlList.get(0).get("t_answer_user_id").toString()));
 					if (null != coverIoSession) {
-						coverIoSession.write(JSONObject.fromObject(new com.yiliao.domain.Mid(Mid.brokenLineRes)).toString());
+						coverIoSession
+								.write(JSONObject.fromObject(new com.yiliao.domain.Mid(Mid.brokenLineRes)).toString());
 					}
 
 					logger.info("[{}]房间查询sql挂断链接,当前计时分钟数->{},消耗金币->{}", sqlList.get(0).get("t_room_id"), time, gold);
-					//获取用户的真实余额	
-					 sql = "SELECT u.t_id,u.t_sex,u.t_nickName,u.t_role,u.t_referee,b.t_recharge_money,b.t_profit_money,b.t_share_money FROM t_user u LEFT JOIN t_balance b ON b.t_user_id = u.t_id WHERE u.t_id = ?";
+					// 获取用户的真实余额
+					sql = "SELECT u.t_id,u.t_sex,u.t_nickName,u.t_role,u.t_referee,b.t_recharge_money,b.t_profit_money,b.t_share_money FROM t_user u LEFT JOIN t_balance b ON b.t_user_id = u.t_id WHERE u.t_id = ?";
 
 					List<Map<String, Object>> data = getQuerySqlList(sql, userId);
-					
-					BigDecimal totalGold = new BigDecimal(data.get(0).get("t_recharge_money")
-							.toString()).add(
-							new BigDecimal(data.get(0).get("t_profit_money").toString())).add(
-							new BigDecimal(data.get(0).get("t_share_money").toString()));
-					
-					if(totalGold.compareTo(gold) < 0) {
-						gold = _video_gold.multiply(new BigDecimal(time_difference.intValue()/60)).setScale(2, BigDecimal.ROUND_DOWN);
-						//如果用户的金币还是小于聊天分钟数
-						//那么扣除用户的所有金币
-						if(totalGold.compareTo(gold) < 0) {
+
+					BigDecimal totalGold = new BigDecimal(data.get(0).get("t_recharge_money").toString())
+							.add(new BigDecimal(data.get(0).get("t_profit_money").toString()))
+							.add(new BigDecimal(data.get(0).get("t_share_money").toString()));
+
+					if (totalGold.compareTo(gold) < 0) {
+						gold = _video_gold.multiply(new BigDecimal(time_difference.intValue() / 60)).setScale(2,
+								BigDecimal.ROUND_DOWN);
+						// 如果用户的金币还是小于聊天分钟数
+						// 那么扣除用户的所有金币
+						if (totalGold.compareTo(gold) < 0) {
 							gold = totalGold;
 						}
 					}
-					
-					
-					//先查询是不是VIP  weitechao
+
+					// 先查询是不是VIP weitechao
 					String sqlVip = "SELECT t_is_vip FROM t_user WHERE t_id = ? ";
 					Map<String, Object> mapIsVip = this.getMap(sqlVip, userIdd);
-					
-					int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());//0是 1不是
-					//是VIP九进行优惠处理
-					if(isVip ==0 ){
+
+					int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+																						// 1不是
+					// 是VIP九进行优惠处理
+					if (isVip == 0) {
 						Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou FROM t_system_setup limit 1 ");
-						gold =  gold.multiply(new BigDecimal(mapZhekou.get("t_zhekou").toString()).divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN)).setScale(2, BigDecimal.ROUND_DOWN);
+						gold = gold
+								.multiply(new BigDecimal(mapZhekou.get("t_zhekou").toString())
+										.divide(new BigDecimal(100)).setScale(2, BigDecimal.ROUND_DOWN))
+								.setScale(2, BigDecimal.ROUND_DOWN);
 					}
-					
-					
+
 					// 保存消费记录
-					int orderId = this.saveOrder(userId, anchorId, 0,WalletDetail.CHANGE_CATEGORY_VIDEO, gold, roomId, time);
-					
+					int orderId = this.saveOrder(userId, anchorId, 0, WalletDetail.CHANGE_CATEGORY_VIDEO, gold, roomId,
+							time);
+
 					// 扣除用户金币
-					goldComputeService.userConsume(userId, WalletDetail.CHANGE_CATEGORY_VIDEO, gold,orderId);
+					goldComputeService.userConsume(userId, WalletDetail.CHANGE_CATEGORY_VIDEO, gold, orderId);
 					// 分配用户的消费的金币
-					goldComputeService.distribution(gold, userId, anchorId,WalletDetail.CHANGE_CATEGORY_VIDEO, orderId);
+					goldComputeService.distribution(gold, userId, anchorId, WalletDetail.CHANGE_CATEGORY_VIDEO,
+							orderId);
 
 					// 把通话时间写入到通话记录中
 					if (userId == Integer.parseInt(sqlList.get(0).get("t_call_user_id").toString())) {
-						updateCallLog(userId, anchorId, roomId, time);
+			 	updateCallLog(userId, anchorId, roomId, time);
 					} else {
-						updateCallLog(anchorId, userId, roomId, time);
+				updateCallLog(anchorId, userId, roomId, time);
 					}
 
 					receptionRate(anchorId, 1);
@@ -716,7 +848,8 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	 * 用户编号
 	 * 
 	 * @param userId
-	 * @param type   1.接通2.未接听
+	 * @param type
+	 *            1.接通2.未接听
 	 */
 	private void receptionRate(int userId, int type) {
 
@@ -770,11 +903,16 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	/**
 	 * 存储订单记录
 	 * 
-	 * @param consume       消费者
-	 * @param cover_consume 被消费者
-	 * @param consume_score 消费资源数据编号
-	 * @param consume_type  消费类型
-	 * @param amount        消费金额
+	 * @param consume
+	 *            消费者
+	 * @param cover_consume
+	 *            被消费者
+	 * @param consume_score
+	 *            消费资源数据编号
+	 * @param consume_type
+	 *            消费类型
+	 * @param amount
+	 *            消费金额
 	 */
 	private int saveOrder(int consume, int cover_consume, int consume_score, int consume_type, BigDecimal amount,
 			int roomId, int logTime) {
@@ -793,21 +931,21 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 		try {
 
 			List<Integer> rooms = RoomTimer.getUserIdReturnRoomId(userId);
-			
-			if(!rooms.isEmpty()) {
-				rooms.forEach(s ->{
-					mu = this.breakLink(userId,s,2);
+
+			if (!rooms.isEmpty()) {
+				rooms.forEach(s -> {
+					mu = this.breakLink(userId, s, 2);
 				});
 			}
- 
+
 			rooms = VideoTiming.getByUserResRoom(userId);
 			if (!rooms.isEmpty()) {
 				rooms.forEach(s -> {
 					// 挂断链接
-					mu = this.breakLink(userId,s, 2);
+					mu = this.breakLink(userId, s, 2);
 				});
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("用户挂断链接异常!", e);
@@ -822,89 +960,92 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	@Override
 	public MessageUtil anchorLaunchVideoChat(int anchorUserId, int userId, int roomId) {
 		try {
-			    //清理主播所在的所有房间 且把房间返回房间池
-			    userHangupLink(anchorUserId);
-			    
-			    if(anchorUserId  == userId){
-					return new MessageUtil(-7, "不能和自己进行视频聊天.");
-				}
-				
-				IoSession ioSession = UserIoSession.getInstance().getMapIoSession(userId);
-				
-				//获取被链接人是否正在连线中
-				if(RoomTimer.getUserIsBusy(userId) || VideoTiming.getUserExist(userId)){
-					//写入到通话记录中
-					saveCallLog(anchorUserId, userId,roomId);
-					
-					return new MessageUtil(-2, "你拨打的用户正忙,请稍后在拨.");
-				}
-				//判断对方是否设置了勿扰
-				String sql = "SELECT * FROM t_user WHERE t_id = ? AND t_is_not_disturb = 1";
-				List<Map<String, Object>> users = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(sql, userId);
-				
-				if(null!=users && !users.isEmpty()){
-					return new MessageUtil(-3, "Sorry,对方设置了勿扰.");
-				}
-				//判断2个连线人是否是同性
-				if(sameSex(userId, anchorUserId)) {
-					return new MessageUtil(-5, "同性别无法进行聊天!");
-				}
-				
-				//获取被链接人的余额是否足够进行视频聊天
-				//获取用户的所有金币
-				String goldSql = "SELECT SUM(t_recharge_money+t_profit_money+t_share_money) AS totalGold FROM t_balance WHERE t_user_id = ?";
-				
-				Map<String, Object> totalGold = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(goldSql, userId);
-				
-				//获取被链接人每分钟需要消耗多少金币
-				String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
-				
-				List<Map<String,Object>> sqlList = this.getQuerySqlList(videoGoldSql, anchorUserId);
-				
-				if(sqlList.isEmpty()) {
-					return new MessageUtil(-6, "您的资料为完善!无法进行呼叫.");
-				}
-				
-				//把链接人
-				//记录用户的链接信息
-				Room room = new Room(roomId);
-				
-				room.setLaunchUserId(userId);
-				room.setCoverLinkUserId(anchorUserId);
-				room.setCallUserId(anchorUserId);
-				
-				//写入到通话记录中   
-				saveCallLog(anchorUserId, userId,roomId);
+			// 清理主播所在的所有房间 且把房间返回房间池
+			userHangupLink(anchorUserId);
 
-				room.setLaunchUserLiveCode(SystemConfig.getValue("play_addr")+room.getLaunchUserId()+"/"+roomId);
-				room.setCoverLinkUserLiveCode(SystemConfig.getValue("play_addr")+room.getCoverLinkUserId()+"/"+roomId);
-				//默认足够支付聊天
-				int satisfy = 1;
-				//判断用户的金币是否满足聊天计时
-				if(null == totalGold.get("totalGold") || new BigDecimal(totalGold.get("totalGold").toString()).compareTo(new BigDecimal(sqlList.get(0).get("t_video_gold").toString())) < 0){
-					satisfy = -1 ;
-				}
-				
-				RoomTimer.useRooms.put(roomId, room);
-				//
-				OnLineRes or = new OnLineRes();
-				or.setMid(Mid.anchorLinkUserRes);
-				or.setRoomId(roomId);
-				or.setConnectUserId(anchorUserId);
-				or.setSatisfy(satisfy);
-				
-				logger.info("当前链接人->{},当前被链接人->{},当前房间号->{},对方session->{}",anchorUserId,userId,roomId,ioSession);
-				
-				/** 激光推送 **/
-				//获取链接人的昵称
-				Map<String, Object> userMap = this.getMap("SELECT t_nickName FROM t_user WHERE t_id = ?", anchorUserId);
-				
-				this.applicationContext.publishEvent(new PushMesgEvnet(
-						new MessageEntity(userId, userMap.get("t_nickName")+"邀请您进行视频聊天!", 0, new Date(),6,roomId,anchorUserId,satisfy)));
-				/** 激光推送 **/
-				if(ioSession != null) {
-					ioSession.write(JSONObject.fromObject(or).toString());
-				}
+			if (anchorUserId == userId) {
+				return new MessageUtil(-7, "不能和自己进行视频聊天.");
+			}
+
+			IoSession ioSession = UserIoSession.getInstance().getMapIoSession(userId);
+
+			// 获取被链接人是否正在连线中
+			if (RoomTimer.getUserIsBusy(userId) || VideoTiming.getUserExist(userId)) {
+				// 写入到通话记录中
+				saveCallLog(anchorUserId, userId, roomId);
+
+				return new MessageUtil(-2, "你拨打的用户正忙,请稍后在拨.");
+			}
+			// 判断对方是否设置了勿扰
+			String sql = "SELECT * FROM t_user WHERE t_id = ? AND t_is_not_disturb = 1";
+			List<Map<String, Object>> users = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(sql, userId);
+
+			if (null != users && !users.isEmpty()) {
+				return new MessageUtil(-3, "Sorry,对方设置了勿扰.");
+			}
+			// 判断2个连线人是否是同性
+			if (sameSex(userId, anchorUserId)) {
+				return new MessageUtil(-5, "同性别无法进行聊天!");
+			}
+
+			// 获取被链接人的余额是否足够进行视频聊天
+			// 获取用户的所有金币
+			String goldSql = "SELECT SUM(t_recharge_money+t_profit_money+t_share_money) AS totalGold FROM t_balance WHERE t_user_id = ?";
+
+			Map<String, Object> totalGold = this.getFinalDao().getIEntitySQLDAO().findBySQLUniqueResultToMap(goldSql,
+					userId);
+
+			// 获取被链接人每分钟需要消耗多少金币
+			String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
+
+			List<Map<String, Object>> sqlList = this.getQuerySqlList(videoGoldSql, anchorUserId);
+
+			if (sqlList.isEmpty()) {
+				return new MessageUtil(-6, "您的资料为完善!无法进行呼叫.");
+			}
+
+			// 把链接人
+			// 记录用户的链接信息
+			Room room = new Room(roomId);
+
+			room.setLaunchUserId(userId);
+			room.setCoverLinkUserId(anchorUserId);
+			room.setCallUserId(anchorUserId);
+
+			// 写入到通话记录中
+			saveCallLog(anchorUserId, userId, roomId);
+
+			room.setLaunchUserLiveCode(SystemConfig.getValue("play_addr") + room.getLaunchUserId() + "/" + roomId);
+			room.setCoverLinkUserLiveCode(
+					SystemConfig.getValue("play_addr") + room.getCoverLinkUserId() + "/" + roomId);
+			// 默认足够支付聊天
+			int satisfy = 1;
+			// 判断用户的金币是否满足聊天计时
+			if (null == totalGold.get("totalGold") || new BigDecimal(totalGold.get("totalGold").toString())
+					.compareTo(new BigDecimal(sqlList.get(0).get("t_video_gold").toString())) < 0) {
+				satisfy = -1;
+			}
+
+			RoomTimer.useRooms.put(roomId, room);
+			//
+			OnLineRes or = new OnLineRes();
+			or.setMid(Mid.anchorLinkUserRes);
+			or.setRoomId(roomId);
+			or.setConnectUserId(anchorUserId);
+			or.setSatisfy(satisfy);
+
+			logger.info("当前链接人->{},当前被链接人->{},当前房间号->{},对方session->{}", anchorUserId, userId, roomId, ioSession);
+
+			/** 激光推送 **/
+			// 获取链接人的昵称
+			Map<String, Object> userMap = this.getMap("SELECT t_nickName FROM t_user WHERE t_id = ?", anchorUserId);
+
+			this.applicationContext.publishEvent(new PushMesgEvnet(new MessageEntity(userId,
+					userMap.get("t_nickName") + "邀请您进行视频聊天!", 0, new Date(), 6, roomId, anchorUserId, satisfy)));
+			/** 激光推送 **/
+			if (ioSession != null) {
+				ioSession.write(JSONObject.fromObject(or).toString());
+			}
 
 			mu = new MessageUtil(1, "正在链接.");
 
@@ -937,17 +1078,23 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 	 * @param time
 	 */
 
-	private void updateCallLog(int userId,int coverUserId,int roomId,int time) {
-	
-		logger.info("userId->{},coverUserId->{},roomId->{}",userId,coverUserId,roomId);
-		
-		List<Map<String,Object>> sqlList = getQuerySqlList("SELECT t_id FROM t_call_log WHERE t_callout_user = ? AND t_answer_user = ? AND t_room_id = ?  ;",
-				userId,coverUserId,roomId);
-		
-		if(!sqlList.isEmpty()) {
-			this.executeSQL("UPDATE t_call_log SET t_call_time = ? WHERE t_id = ? ", time , sqlList.get(0).get("t_id"));
-		}else {
-			logger.info("{}连线{}主播在{}房间聊天,没有聊天记录.",userId,coverUserId,roomId);
+	private void updateCallLog(int userId, int coverUserId, int roomId, int time) {
+
+		logger.info("userId->{},coverUserId->{},roomId->{}", userId, coverUserId, roomId);
+
+		List<Map<String, Object>> sqlList = getQuerySqlList(
+				"SELECT t_id FROM t_call_log WHERE t_callout_user = ? AND t_answer_user = ? AND t_room_id = ?  order by  t_id  desc;",
+				userId, coverUserId, roomId);
+
+		if (!sqlList.isEmpty()) {
+			if(time == 0){
+			   time = 1;
+			}
+			logger.info("weitechao xiugatonghuajilu ="+sqlList.get(0).get("t_id"));
+			logger.info("weitechao shijian ="+time);
+			this.executeSQL("UPDATE t_call_log SET t_call_time = ? WHERE t_id = ? ", time, sqlList.get(0).get("t_id"));
+		} else {
+			logger.info("{}连线{}主播在{}房间聊天,没有聊天记录.", userId, coverUserId, roomId);
 		}
 
 	}
