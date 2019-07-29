@@ -131,51 +131,34 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			Map<String, Object> mapIsVip = this.getMap(sql, userId);
 
 			int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是1不是
+			logger.info("yonghu jin e用户金额="+userBal);
+			logger.info("主播聊天金额="+anthBal);
+			logger.info("是否是VIP="+isVip);
 			
-           if(isVip == 1){
-			// 判断用户的金币是否满足聊天计时
+			if(isVip == 0){
+				Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+				BigDecimal zhekou = new BigDecimal(mapZhekou.get("t_zhekou") + "");
+				BigDecimal zuiDi = new BigDecimal(mapZhekou.get("t_zuidi") + "");
+				anthBal = userBal.subtract(zhekou).compareTo(zuiDi)==1 ? anthBal.subtract(zhekou) : zuiDi;
+			}
+			logger.info("anthBal="+anthBal);
 			if (null == userBal || userBal.compareTo(anthBal) == -1) {
 				json.put("onlineState", -1);
 			} else {
 				if (userBal.compareTo(BigDecimal.valueOf(0)) > 0) { //就是钱够
-
 					if (userBal.compareTo(anthBal) == 0) {  //只够一分钟
 						json.put("onlineState", 1);
 					} else if (anthBal.multiply(BigDecimal.valueOf(2)).setScale(0, BigDecimal.ROUND_DOWN) 
-							.compareTo(userBal) >= 0 && userBal.compareTo(anthBal) > 0) {
+							.compareTo(userBal) > 0 && userBal.compareTo(anthBal) > 0) {
 						json.put("onlineState", 1);
 						//主播的钱 *2  比用户的钱多 并且  用户的钱多主播多
 					}
 				}
 			}
-		}else{
-			
-			Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
-			BigDecimal zhekou = new BigDecimal(mapZhekou.get("t_zhekou") + "");
-			BigDecimal zuiDi = new BigDecimal(mapZhekou.get("t_zuidi") + "");
-			
-			anthBal = userBal.subtract(zhekou).compareTo(zuiDi)==1 ? userBal.subtract(zhekou) : zuiDi;
-					// 判断用户的金币是否满足聊天计时
-					if (null == userBal || userBal.compareTo(anthBal) == -1) {
-						json.put("onlineState", -1);
-					} else {
-						if (userBal.compareTo(BigDecimal.valueOf(0)) > 0) { //就是钱够
-
-							if (userBal.compareTo(anthBal) == 0) {  //只够一分钟
-								json.put("onlineState", 1);
-							} else if (anthBal.multiply(BigDecimal.valueOf(2)).setScale(0, BigDecimal.ROUND_DOWN) 
-									.compareTo(userBal) >= 0 && userBal.compareTo(anthBal) > 0) {
-								json.put("onlineState", 1);
-								//主播的钱 *2  比用户的钱多 并且  用户的钱多主播多
-							}
-						}
-					}
-		
-		}
-
 			mu = new MessageUtil();
 			mu.setM_istatus(1);
 			mu.setM_object(json);
+			logger.info("是否满足1分钟  json="+json.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("用户获取签名异常!", e);
@@ -258,10 +241,25 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 
 				return new MessageUtil(-6, "主播资料未完善!无法发起聊天.");
 			}
+			
+			BigDecimal t_video_gold =new BigDecimal(sqlList.get(0).get("t_video_gold").toString());
+			
+			// 先查询是不是VIP weitechao
+			String sqlVip = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+			Map<String, Object> mapIsVip = this.getMap(sqlVip, coverLinkUserId);
+			int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+            if(isVip == 0){
+            	 Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+					BigDecimal zheKou =new BigDecimal(mapZhekou.get("t_zhekou") + "");
+					BigDecimal zuiDi =new BigDecimal(mapZhekou.get("t_zuidi") + "");
+					// b = b - c > d ? b - c : d;
+					t_video_gold = t_video_gold.subtract(zheKou).compareTo(zuiDi)>0 ? t_video_gold.subtract(zheKou): zuiDi;
+            }
+
 
 			// 判断用户的金币是否满足聊天计时
 			if (null == totalGold.get("totalGold") || new BigDecimal(totalGold.get("totalGold").toString())
-					.compareTo(new BigDecimal(sqlList.get(0).get("t_video_gold").toString())) < 0) {
+					.compareTo(t_video_gold) < 0) {
 				return new MessageUtil(-4, "余额不足!请充值.");
 			}
 
@@ -385,9 +383,22 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 				// 获取被链接人每分钟需要消耗多少金币
 				String videoGoldSql = "SELECT t_video_gold FROM t_anchor_setup WHERE t_user_id = ?";
 				List<Map<String, Object>> sqlList = this.getQuerySqlList(videoGoldSql, anthorId);
+				
+				BigDecimal t_video_gold  = new BigDecimal(sqlList.get(0).get("t_video_gold").toString());
+				
+				// 先查询是不是VIP weitechao
+				String sqlVip = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+				Map<String, Object> mapIsVip = this.getMap(sqlVip, anthorId);
+				int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+	            if(isVip == 0){
+	            	 Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+						BigDecimal zheKou =new BigDecimal(mapZhekou.get("t_zhekou") + "");
+						BigDecimal zuiDi =new BigDecimal(mapZhekou.get("t_zuidi") + "");
+						// b = b - c > d ? b - c : d;
+						t_video_gold = t_video_gold.subtract(zheKou).compareTo(zuiDi)>0 ? t_video_gold.subtract(zheKou): zuiDi;
+	            }
 
-				if (new BigDecimal(sqlList.get(0).get("t_video_gold").toString())
-						.compareTo(new BigDecimal(totalGold.get("totalGold").toString())) == 1) {
+				if (t_video_gold.compareTo(new BigDecimal(totalGold.get("totalGold").toString())) == 1) {
 					logger.info("用户余额-->{}", totalGold.get("totalGold").toString());
 					return new MessageUtil(-1, "余额不足!请充值.");
 				}
@@ -445,6 +456,24 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			map.put("timing", 0);
 			map.put("roomId", roomId); // 房间号
 			map.put("anthorId", anthorId); // 主播编号
+			map.put("isvip", 1);
+			map.put("zhekou", 2);
+			map.put("zuidi", 1);
+			//获取用户是否是VIP 0是1 不是
+			String sql = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
+			Map<String, Object> mapIsVip = this.getMap(sql, userId); 
+			if(!mapIsVip.isEmpty()){
+				map.put("isvip", Integer.parseInt(mapIsVip.get("t_is_vip").toString()));
+				//int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+			}
+			
+			Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
+			if(!mapZhekou.isEmpty()){
+				int zhekou = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zhekou") + ""));
+				int zuiDi = (int) Math.floor(Double.parseDouble(mapZhekou.get("t_zuidi") + ""));
+				map.put("zhekou", zhekou);
+				map.put("zuidi", zuiDi);
+			}
 
 			logger.info("{}房间开始计时,anthorId->{},userId->{},加入到计时系统开始", roomId, anthorId, userId);
 
@@ -561,7 +590,19 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					VideoTiming.timingUser.remove(room.getLaunchUserId());
 
 					// 计算本次链接链接分钟数
-					int time = map.get("timing") % 60 == 0 ? map.get("timing") / 60 : map.get("timing") / 60 + 1;
+					int miao = map.get("timing");
+					if(miao!=1 && miao%10 == 1){
+						miao =miao-1;
+					}
+					int time = 0;
+					logger.info("jifei miao="+miao);
+					if(miao > 0&& miao<60){
+						time = 1;
+					}else if(miao%60==0){
+						time = miao/60;
+					}else{
+						time = miao/60+1;
+					}
 
 					// 计算本次链接一共消耗了多少金币
 					int gold = 0;

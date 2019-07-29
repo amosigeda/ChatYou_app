@@ -23,7 +23,7 @@ public interface ICommService {
 	
 	List<Map<String,Object>> getQuerySqlList(String sql, final Object ... objects);
 	
-	Map<String, Object> getMap(String sql,final Object ... objects);
+     Map<String, Object> getMap(String sql,final Object ... objects);
 	
 	int executeSQL(String sql,final Object ... objects);
 }
