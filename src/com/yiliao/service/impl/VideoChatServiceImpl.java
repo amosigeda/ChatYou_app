@@ -244,10 +244,13 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 			
 			BigDecimal t_video_gold =new BigDecimal(sqlList.get(0).get("t_video_gold").toString());
 			
+			logger.info("launchVideoChat t_video_gold = "+t_video_gold);
+			
 			// 先查询是不是VIP weitechao
 			String sqlVip = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
-			Map<String, Object> mapIsVip = this.getMap(sqlVip, coverLinkUserId);
+			Map<String, Object> mapIsVip = this.getMap(sqlVip, launchUserId);
 			int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+			logger.info("isVip = "+isVip);
             if(isVip == 0){
             	 Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
 					BigDecimal zheKou =new BigDecimal(mapZhekou.get("t_zhekou") + "");
@@ -255,7 +258,8 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 					// b = b - c > d ? b - c : d;
 					t_video_gold = t_video_gold.subtract(zheKou).compareTo(zuiDi)>0 ? t_video_gold.subtract(zheKou): zuiDi;
             }
-
+        	logger.info("t_video_gold = "+ t_video_gold);
+        	logger.info("totalGold = "+totalGold.get("totalGold").toString());
 
 			// 判断用户的金币是否满足聊天计时
 			if (null == totalGold.get("totalGold") || new BigDecimal(totalGold.get("totalGold").toString())
@@ -388,8 +392,11 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 				
 				// 先查询是不是VIP weitechao
 				String sqlVip = "SELECT t_is_vip,t_role FROM t_user WHERE t_id = ? ";
-				Map<String, Object> mapIsVip = this.getMap(sqlVip, anthorId);
+				Map<String, Object> mapIsVip = this.getMap(sqlVip, userId);
 				int isVip = Integer.parseInt(mapIsVip.get("t_is_vip").toString());// 0是
+				logger.info("videoCharBeginTiming  t_video_gold= "+t_video_gold);
+				logger.info("videoCharBeginTiming  totalGold= "+totalGold.get("totalGold").toString());
+				logger.info("isVip = "+isVip);
 	            if(isVip == 0){
 	            	 Map<String, Object> mapZhekou = this.getMap("SELECT t_zhekou,t_zuidi FROM t_system_setup limit 1 ");
 						BigDecimal zheKou =new BigDecimal(mapZhekou.get("t_zhekou") + "");
@@ -397,7 +404,7 @@ public class VideoChatServiceImpl extends ICommServiceImpl implements VideoChatS
 						// b = b - c > d ? b - c : d;
 						t_video_gold = t_video_gold.subtract(zheKou).compareTo(zuiDi)>0 ? t_video_gold.subtract(zheKou): zuiDi;
 	            }
-
+	        	logger.info("videoCharBeginTiming  t_video_gold= "+t_video_gold);
 				if (t_video_gold.compareTo(new BigDecimal(totalGold.get("totalGold").toString())) == 1) {
 					logger.info("用户余额-->{}", totalGold.get("totalGold").toString());
 					return new MessageUtil(-1, "余额不足!请充值.");
