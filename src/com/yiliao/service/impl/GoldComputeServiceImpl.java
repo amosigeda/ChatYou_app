@@ -23,9 +23,9 @@ public class GoldComputeServiceImpl extends ICommServiceImpl implements GoldComp
 	 * 
 	 * @return
 	 */
-	private List<Map<String, Object>> allotRatio() {
+	private List<Map<String, Object>> allotRatio(int change_category) {
 		// 取得各种分账比例
-		String sql = "SELECT t_project_type,t_extract_ratio FROM t_extract";
+		String sql = "SELECT t_project_type,t_extract_ratio FROM t_extract where t_project_type ="+ change_category;
 		return this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(sql);
 
 	}
@@ -86,12 +86,12 @@ public class GoldComputeServiceImpl extends ICommServiceImpl implements GoldComp
 		// 被消费人的收益
 		BigDecimal coverGold = null;
 		// 平台总的收益(暂未分配)
-		BigDecimal systemGold = null;
+		BigDecimal systemGold= null;
 
 		// 对消费的金币分为百分 得到每份数据
 		BigDecimal copy = gold.divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
 
-		List<Map<String, Object>> ratio = allotRatio();
+		List<Map<String, Object>> ratio = allotRatio(change_category);
 		// 循环分配数据
 		for (Map<String, Object> map : ratio) {
 			// 平台抽成比例
