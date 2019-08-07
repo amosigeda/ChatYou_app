@@ -924,17 +924,16 @@ public class MoneyServiceImpl extends ICommServiceImpl implements MoneyService {
 		mu = new MessageUtil();
 		try {
 			String qSql = "SELECT * FROM t_put_forward_data WHERE t_user_id = "+ userId +" and t_type=3 limit 1";
-			Map<String, Object> userData = this.getFinalDao().getIEntitySQLDAO()
-					.findBySQLUniqueResultToMap(qSql);
+			List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql);
 			     
 	/*		String qSql = "SELECT * FROM t_put_forward_data WHERE t_user_id = ? and t_type=3 limit 1";
 			List<Map<String, Object>> userData = this.getFinalDao().getIEntitySQLDAO().findBySQLTOMap(qSql, userId, t_id);*/
 			
-			if (null == userData || userData.isEmpty()) {
+			if (userData.size()<=0) {
 				return new MessageUtil(0, "请添加银行卡信息!");
 			}else{
 				mu.setM_istatus(1);
-				mu.setM_object(userData);
+				mu.setM_object(userData.get(0).toString());
 				return mu;
 			}
 		} catch (Exception e) {

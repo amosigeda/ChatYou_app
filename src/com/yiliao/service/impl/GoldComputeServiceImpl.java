@@ -403,6 +403,15 @@ public class GoldComputeServiceImpl extends ICommServiceImpl implements GoldComp
 	 */
 	public synchronized void saveChangeRecord(int userId, BigDecimal sourceMoney, BigDecimal valueMoney, int changeType,
 			int changeCategory, int goldType, int soureceId) {
+		
+		if(valueMoney == null){
+			valueMoney = new BigDecimal("0.0");
+		}
+		
+		if(sourceMoney == null){
+			sourceMoney = new BigDecimal("0.0");
+		}
+		
 		// 存储变动记录
 		String sql = "INSERT INTO t_wallet_detail ( t_user_id, t_change_type, t_change_category, t_change_front, t_value, t_change_after, t_change_time,t_sorece_id)"
 				+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?);";

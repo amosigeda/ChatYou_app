@@ -298,7 +298,7 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 			"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? ", consumeUserId);//0.是  1.否 vip
 			
 
-			if (!getUserIsVip(consumeUserId) && (null == user || user.isEmpty())) {
+			if (!getUserIsVip(consumeUserId) && user.size()>0) {
 				// 获取对方收费设置
 				String sql = " SELECT t_text_gold FROM t_anchor_setup WHERE t_user_id = ? ";
 				Map<String, Object> price = this.getMap(sql, coverConsumeUserId);
