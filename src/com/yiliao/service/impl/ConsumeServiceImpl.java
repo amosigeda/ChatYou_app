@@ -296,39 +296,44 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 			if(getUserIsZhuBo(consumeUserId)){
 				mu = new MessageUtil(2, "无需支付!");
 			}else{
-				// 获取当前用户角色
-				List<Map<String, Object>> user = this.getQuerySqlList(
-//						"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? AND t_is_vip = 1 ", consumeUserId);//0.是  1.否 vip
-				"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? ", consumeUserId);//0.是  1.否 vip
-				
-
-				if (!getUserIsVip(consumeUserId) && user.size()>0) {
-					// 获取对方收费设置
-					String sql = " SELECT t_text_gold FROM t_anchor_setup WHERE t_user_id = ? ";
-					Map<String, Object> price = this.getMap(sql, coverConsumeUserId);
-					// 保存消费记录 并返回消费记录编号
-					int orderId = this.saveOrder(consumeUserId, coverConsumeUserId, 0, WalletDetail.CHANGE_CATEGORY_TEXT,
-							new BigDecimal(price.get("t_text_gold").toString()));
-					// 扣除消费者需要消费的金币
-					if (goldComputeService.userConsume(consumeUserId, WalletDetail.CHANGE_CATEGORY_TEXT,
-							new BigDecimal(price.get("t_text_gold").toString()), orderId)) {
-
-						// 分配用户的消费的金币
-						goldComputeService.distribution(new BigDecimal(price.get("t_text_gold").toString()), consumeUserId,
-								coverConsumeUserId, WalletDetail.CHANGE_CATEGORY_TEXT, orderId);
-
-						mu = new MessageUtil();
-						mu.setM_istatus(1);
-						mu.setM_strMessage("消费成功!");
-					} else {
-						this.executeSQL("DELETE FROM t_order WHERE t_id = ? ", orderId);
-						mu = new MessageUtil();
-						mu.setM_istatus(-1);
-						mu.setM_strMessage("余额不足!请充值.");
-					}
-				} else {
+				if(getUserIsVip(consumeUserId)){
 					mu = new MessageUtil(2, "无需支付!");
+				}else{
+					// 获取当前用户角色
+					List<Map<String, Object>> user = this.getQuerySqlList(
+//							"SELECT * FROM t_user WHERE t_role = 1 AND t_id = ? AND t_is_vip = 1 ", consumeUserId);//0.是  1.否 vip
+					"SELECT * FROM t_user WHERE  t_id = ? ", consumeUserId);//0.是  1.否 vip
+					
+
+					if (!getUserIsVip(consumeUserId) && user.size()>0) {
+						// 获取对方收费设置
+						String sql = " SELECT t_text_gold FROM t_anchor_setup WHERE t_user_id = ? ";
+						Map<String, Object> price = this.getMap(sql, coverConsumeUserId);
+						// 保存消费记录 并返回消费记录编号
+						int orderId = this.saveOrder(consumeUserId, coverConsumeUserId, 0, WalletDetail.CHANGE_CATEGORY_TEXT,
+								new BigDecimal(price.get("t_text_gold").toString()));
+						// 扣除消费者需要消费的金币
+						if (goldComputeService.userConsume(consumeUserId, WalletDetail.CHANGE_CATEGORY_TEXT,
+								new BigDecimal(price.get("t_text_gold").toString()), orderId)) {
+
+							// 分配用户的消费的金币
+							goldComputeService.distribution(new BigDecimal(price.get("t_text_gold").toString()), consumeUserId,
+									coverConsumeUserId, WalletDetail.CHANGE_CATEGORY_TEXT, orderId);
+
+							mu = new MessageUtil();
+							mu.setM_istatus(1);
+							mu.setM_strMessage("消费成功!");
+						} else {
+							this.executeSQL("DELETE FROM t_order WHERE t_id = ? ", orderId);
+							mu = new MessageUtil();
+							mu.setM_istatus(-1);
+							mu.setM_strMessage("余额不足!请充值.");
+						}
+					} else {
+						mu = new MessageUtil(2, "无需支付!");
+					}
 				}
+	
 			}
 			
 			

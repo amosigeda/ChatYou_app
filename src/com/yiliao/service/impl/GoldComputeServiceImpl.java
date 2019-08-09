@@ -57,13 +57,15 @@ public class GoldComputeServiceImpl extends ICommServiceImpl implements GoldComp
 	 */
 	public synchronized boolean userConsume(int userId, int change_category, BigDecimal consumeGold, int soureceId) {
 
+		
 		Map<String, Object> user = queryUserData(userId);
 
 		BigDecimal totalGold = new BigDecimal(user.get("t_recharge_money").toString())
 				.add(new BigDecimal(user.get("t_profit_money").toString()))
 				.add(new BigDecimal(user.get("t_share_money").toString()));
 		// 如果金币不足时 直接返回
-		if (totalGold.intValue() < consumeGold.intValue()) {
+		//if (totalGold.intValue() < consumeGold.intValue()) {
+		if (totalGold.compareTo(consumeGold) < 0) {
 			return false;
 		}
 
@@ -84,14 +86,28 @@ public class GoldComputeServiceImpl extends ICommServiceImpl implements GoldComp
 		Map<String, Object> coverConsume = queryUserData(coverConsumeUserId);
 
 		// 被消费人的收益
-		BigDecimal coverGold = null;
+		BigDecimal coverGold = new BigDecimal("0.0");
+		
 		// 平台总的收益(暂未分配)
-		BigDecimal systemGold= null;
+		BigDecimal systemGold= new BigDecimal("0.0");
 
 		// 对消费的金币分为百分 得到每份数据
 		BigDecimal copy = gold.divide(new BigDecimal(100), 2, RoundingMode.HALF_UP);
+		
+		List<Map<String, Object>> ratio = allotRatio(0);
+		String baifenBi = "70";
+		if(ratio.size()>0){
+			baifenBi = ratio.get(0).get("t_extract_ratio")+"";
+		}
+		
+         systemGold =	gold.multiply(new BigDecimal(baifenBi)).divide(new BigDecimal("100"));
+		
+		coverGold = gold.subtract(systemGold);
+		
+		logger.info("weitechao fenpei = "+gold+","+consumeUserId+","+coverConsumeUserId+","+baifenBi+","+systemGold+","+coverGold);
+		
 
-		List<Map<String, Object>> ratio = allotRatio(change_category);
+		/*List<Map<String, Object>> ratio = allotRatio(change_category);
 		// 循环分配数据
 		for (Map<String, Object> map : ratio) {
 			// 平台抽成比例
@@ -109,7 +125,7 @@ public class GoldComputeServiceImpl extends ICommServiceImpl implements GoldComp
 				break;
 			}
 
-		}
+		}*/
 
 		/************ 存储被消费者的记录 *************/
 
