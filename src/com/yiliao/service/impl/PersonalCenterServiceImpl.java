@@ -143,6 +143,15 @@ public class PersonalCenterServiceImpl extends ICommServiceImpl implements Perso
 
 			userMap.put("spprentice", Integer.parseInt(spprenticeMap.get("spprentice").toString())
 					+ Integer.parseInt(discipleMap.get("twoSpreadCount").toString()));
+			
+			List<Map<String, Object>> querySqlList = this
+					.getQuerySqlList(" SELECT  t_parameter FROM t_system_setup ");
+			
+			userMap.put("app_parameter", "");
+			if(querySqlList.size()>0){
+				userMap.put("app_parameter", querySqlList.get(0).get("t_parameter"));
+			}
+			
 
 			mu = new MessageUtil();
 			mu.setM_istatus(1);

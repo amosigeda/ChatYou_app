@@ -800,6 +800,10 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 				res_map.put("serviceOrderId", orderNo);
 			}else  if(payType == 4) { //苹果支付预留
 				// 生成苹果支付相关构建代码和回传给app的数据信息
+				orderNo = orderNo + "ios_" + userId + "_" + System.currentTimeMillis();
+				res_map = new HashMap<>(); 
+				res_map.put("goodsName", setMealMap.get("t_set_meal_name"));
+				res_map.put("serviceOrderId", orderNo);
 			}
 
 			if (StringUtils.isNotBlank(aliPay) || (null != map && !map.isEmpty()) || (null !=res_map && !res_map.isEmpty())) {
@@ -830,7 +834,7 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 					mu.setM_object(res_map);
 					break;
 				case 4: //Apple pay
-					
+					mu.setM_object(res_map);
 					break;
 				}
 			} else {
@@ -932,6 +936,11 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 				resMap.put("serviceOrderId", orderNo);
 			}else if(payType == 4) { //苹果支付
 				// 生成苹果支付相关构建代码和回传给app的数据信息
+				orderNo = orderNo + "ios_" + userId + "_" + System.currentTimeMillis();
+				// 创建返回数据
+				resMap = new HashMap<>();
+				resMap.put("goodsName", smlMap.get("t_set_meal_name"));
+				resMap.put("serviceOrderId", orderNo);
 			}
 
 			if (StringUtils.isNotBlank(alipay) || (null != map && !map.isEmpty()) || (null != resMap && !resMap.isEmpty())) {	
@@ -963,7 +972,7 @@ public class ConsumeServiceImpl extends ICommServiceImpl implements ConsumeServi
 					mu.setM_object(resMap);
 					break;
 				case 4 : //Apple pay
-					
+					mu.setM_object(resMap);
 					break;
 				}
 			} else {
